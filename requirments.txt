@@ -1,4 +1,9 @@
 asgiref==3.7.2
+autopep8==2.0.4
 Django==5.0.2
+pillow==10.2.0
+pycodestyle==2.11.1
 sqlparse==0.4.4
+tomli==2.0.1
+typing_extensions==4.10.0
 tzdata==2024.1
