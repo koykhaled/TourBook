@@ -39,7 +39,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'Admin',
     'Advertiser',
-    'Tour_Organizer'
+    'Tour_Organizer',
+    'Client'
 ]
 
 MIDDLEWARE = [
