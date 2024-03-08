@@ -1,6 +1,7 @@
 from django.db import models
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from Core.models.attachment import Attachment
 
 # Create your models here.
 class Situation(models.TextChoices):
@@ -27,7 +28,6 @@ class Advertiser(models.Model):
 
     """
 
-    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=30)
     situation = models.CharField( choices=Situation.choices, default=Situation.UNSUBCRIEPER)
     place_capacity = models.IntegerField(max_length=6)
@@ -69,10 +69,10 @@ class Advertiser_Attachments(models.Model):
     advertiser_id =  models.ForeignKey(
         Advertiser ,
         on_delete = models.CASCADE )
-    """attachment_id = models.ForeignKey(
+    attachment_id = models.ForeignKey(
         Attachment ,
         on_delete = models.CASCADE )
-    """
+    
 
 
 

@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 from datetime import datetime
 import re
 from .advertiser import Advertiser
+from Core.models.attachment import Attachment
 
 class Offers(models.Model):
      """
@@ -18,7 +19,7 @@ class Offers(models.Model):
      - advertiser_id :  The advertiser associated with the offer.
                         It is a foreign key referencing the 'Advertiser' model.
      """
-     id = models.AutoField(primary_key=True)
+
      start_date = models.DateTimeField()
      end_date = models.DateTimeField()
      price_for_one = models.FloatField(max_length=15)
@@ -66,7 +67,6 @@ class Offer_Attachments(models.Model):
     offer_id =  models.ForeignKey(
         Offers ,
         on_delete = models.CASCADE )
-    """attachment_id = models.ForeignKey(
+    attachment_id = models.ForeignKey(
         Attachment ,
         on_delete = models.CASCADE )
-    """

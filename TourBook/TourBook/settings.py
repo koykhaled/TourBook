@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'Admin',
     'Advertiser',
     'Tour_Organizer',
-    'Client'
+    'Client',
+    'Core',
 ]
 
 MIDDLEWARE = [
