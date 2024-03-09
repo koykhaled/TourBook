@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'Advertiser',
     'Tour_Organizer',
     'Client',
-    'Core',
+    'Core'
 ]
 
 MIDDLEWARE = [
@@ -127,4 +127,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'Admin.UserAccount'
+AUTH_USER_MODEL = 'Core.UserAccount'
