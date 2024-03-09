@@ -1,27 +1,20 @@
 from django.db import models
-from django.conf import settings
-from .advertiser import Advertiser
+from Core.models.base import BaseModel
+import re
 
-class Services(models.Model):
-     """
-        This class represents the service that offer by the advertiser.
-     """
-     service = models.CharField(max_length=30)
- 
-     def getService(self):
+
+class Service(BaseModel):
+    """
+       This class represents the service that offer by the advertiser.
+    """
+    service_field = models.CharField(max_length=30)
+
+    def clean(self):
+        """
+        Validate that no Invalid String (service).
+        """
+        if not bool(re.match(r'^ [A-z\s]{4, }$', self.service)):
+            raise ValueError(f"Invalid {self.service}")
+
+    def __str__(self):
         return self.service
-
-class Advertiser_Services(models.Model):
-    """
-         This class represents the relationship between an advertiser and the services they offer.
-    """
-    advertiser_id = models.ForeignKey(
-        Advertiser ,
-        on_delete = models.CASCADE )
-    service_id = models.ManyToManyField(
-        Services ,
-        on_delete = models.CASCADE
-    )
-
-    
-  
