@@ -70,6 +70,7 @@ class Tour(BaseModel):
         """
         Cleans and validates the model instance before saving.
 
+
         - Checks if the start_date and end_date are not in the past.
         - Ensures that the end_date is after the start_date.
         - Validates the title and other character fields.
