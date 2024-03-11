@@ -1,7 +1,7 @@
 from .models import Tour
 from django.contrib import admin
 from .models.tour_organizer import TourOrganizer
-from .models.Tour import Tour
+from .models.tour import Tour
 from .models.tour_point import TourPoint
 # Register your models here.
 
