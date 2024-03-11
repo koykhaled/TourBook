@@ -73,7 +73,7 @@ class Tour(BaseModel):
         - Checks if the start_date and end_date are not in the past.
         - Ensures that the end_date is after the start_date.
         - Validates the title and other character fields.
-        - Ensures that numeric fields are not set to -1.
+        - Ensures that numeric fields are not Negative.
         """
 
         if self.start_date < datetime.now() or self.end_date < datetime.now():
