@@ -1,6 +1,7 @@
 from django.db import models
 from .user import UserAccount
 
+
 class Notification (models.Model):
     """
     Model representing a notification.
@@ -10,7 +11,7 @@ class Notification (models.Model):
         user_id (UserAccount): The user associated with the notification.
     """
     content = models.CharField(max_length=150)
-    user_id = models.ForeignKey( 
-        UserAccount ,
-        on_delete = models.CASCADE 
+    user_id = models.ForeignKey(
+        UserAccount,
+        on_delete=models.CASCADE
     )

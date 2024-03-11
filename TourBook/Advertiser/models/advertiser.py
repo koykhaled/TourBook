@@ -1,9 +1,13 @@
 from django.db import models
 from django.conf import settings
+from Core.models.base import BaseModel
 from django.core.exceptions import ValidationError
 from Core.models.attachment import Attachment
-
+from .service import Service
+import re
 # Create your models here.
+
+
 class Situation(models.TextChoices):
     SUBCRIEPER = "SUB", "Subscriper"
     UNSUBCRIEPER = "UNSUB", "UnSubscriper"
@@ -14,7 +18,7 @@ class Situation(models.TextChoices):
         return keys
 
 
-class Advertiser(models.Model):
+class Advertiser(BaseModel):
     """
     This class represents an advertiser in the system.
 
@@ -29,16 +33,18 @@ class Advertiser(models.Model):
     """
 
     name = models.CharField(max_length=30)
-    situation = models.CharField( choices=Situation.choices, default=Situation.UNSUBCRIEPER)
-    place_capacity = models.IntegerField(max_length=6)
+    situation = models.CharField(max_length=10,
+                                 choices=Situation.choices, default=Situation.UNSUBCRIEPER)
+    place_capacity = models.IntegerField(default=0)
     place_name = models.CharField(max_length=30)
-    link = models.URLField()
-    axis_x = models.FloatField(max_digits=9, decimal_places=6)
-    axis_y = models.FloatField(max_digits=9, decimal_places=6)
-    user_id = models.OneToOneField(
-        settings.AUTH_USER_MODEL ,
-        on_delete = models.CASCADE )
-    
+    link = models.URLField(unique=True)
+    axis_x = models.FloatField(max_length=9, default=0)
+    axis_y = models.FloatField(max_length=9, default=0)
+    service = models.ManyToManyField(Service)
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE)
+
     def clean(self):
         """
         Performs validation on the model fields.
@@ -46,33 +52,36 @@ class Advertiser(models.Model):
         Raises:
         - ValueError: If any of the validation conditions fail.
         """
-        super().clean()
+        url_pattern = r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+        if not bool(re.match(url_pattern, self.link)):
+            raise ValueError(
+                "Unvalid Link , please make sure that start with https")
 
-        if self.place_capacity < 0:
-            raise ValidationError('The capacity must be greater than zero')       
         if self.situation not in Situation.getSituationKeys():
             raise ValueError(
-                f"Situation Must be one of {' ,'.join(Situation.getSituationKeys())}")       
-        if not (-180 <= self.axis_x <= 180):
-            raise ValidationError('Invalid x coordinate value. Must be between -180 and 180.')
-        if not (-90 <= self.axis_y <= 90):
-            raise ValidationError('Invalid y coordinate value. Must be between -90 and 90.')
-        
+                f"Situation Must be one of {' ,'.join(Situation.getSituationKeys())}")
+
+        for field in self.get_numeric_fields():
+            if field.name in ['axis_x', 'axis_y']:
+                if not self.is_within(-180, 180, getattr(self, field.name)):
+                    raise ValueError(
+                        f"{field.name} Must be between -180 and 180")
+            else:
+                if getattr(self, field.name) < 0:
+                    raise ValueError(
+                        f"{field.name} Should NOT be Negative")
+
         def __str__(self):
             return "Advertiser_"+self.place_name
 
-class Advertiser_Attachments(models.Model):
+
+class Advertiser_Attachments(BaseModel):
     """
     This class represents an attachment associated with an advertiser.
     """
-    id = models.AutoField(primary_key=True)
-    advertiser_id =  models.ForeignKey(
-        Advertiser ,
-        on_delete = models.CASCADE )
-    attachment_id = models.ForeignKey(
-        Attachment ,
-        on_delete = models.CASCADE )
-    
-
-
-
+    advertiser_object = models.ForeignKey(
+        Advertiser,
+        on_delete=models.CASCADE)
+    attachment = models.ForeignKey(
+        Attachment,
+        on_delete=models.CASCADE)

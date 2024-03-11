@@ -37,7 +37,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'Admin',
     'Advertiser',
     'Tour_Organizer',
     'Client',
@@ -127,4 +126,4 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'Admin.UserAccount'
+AUTH_USER_MODEL = 'Core.UserAccount'

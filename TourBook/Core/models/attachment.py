@@ -1,4 +1,6 @@
 from django.db import models
+
+
 class Attachment (models.Model):
     """
     Model representing an attachment.
@@ -17,6 +19,7 @@ class Attachment (models.Model):
         super().clean()
         if self.type:
             file_extension = self.type.name.split('.')[-1].lower()
-            allowed_extensions = ['jpg', 'pdf','jpeg','png']
+            allowed_extensions = ['jpg', 'pdf', 'jpeg', 'png']
             if file_extension not in allowed_extensions:
-                raise ValueError('Invalid file type. Only JPG , PDF , JPEG and PNG files are allowed.')
+                raise ValueError(
+                    'Invalid file type. Only JPG , PDF , JPEG and PNG files are allowed.')

@@ -1,5 +1,6 @@
 from django.db import models
-from .TourOrganizer import BaseModel, TourOrganizer
+from Core.models.base import BaseModel
+from .tour_organizer import TourOrganizer
 from datetime import datetime
 
 import re
@@ -74,26 +75,26 @@ class Tour(BaseModel):
         - Validates the title and other character fields.
         - Ensures that numeric fields are not set to -1.
         """
+
         if self.start_date < datetime.now() or self.end_date < datetime.now():
             raise ValueError("Start Date or End Date can't be in the past")
 
         if self.start_date >= self.end_date:
             raise ValueError("End Date can't be before Start Date!!")
 
-        if not re.match(r'^[A-z0-9\s]{4,}$', self.title):
-            raise ValueError(f"Invalid {self.title}")
-
         for field in self.get_char_fields():
             if not bool(re.match(r'^[A-z0-9\s]{4,}$', getattr(self, field.name))):
                 raise ValueError(f"Invalid {field.name  }")
 
         for field in self.get_numeric_fields():
-            if field.name == "id":
-                continue
-
-            if getattr(self, field.name) < 0:
-                raise ValueError(
-                    f"{field.name} Should NOT be Negative")
+            if field.name in ['x_starting_place', 'y_starting_place']:
+                if not self.is_within(-90, 180, getattr(self, field.name)):
+                    raise ValueError(
+                        f"{field.name} Must be between -90 and 180")
+            else:
+                if getattr(self, field.name) < 0:
+                    raise ValueError(
+                        f"{field.name} Should NOT be Negative")
 
     def save(self, *args, **kwargs):
         self.end_date = datetime.strptime(
