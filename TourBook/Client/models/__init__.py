@@ -1,2 +1,2 @@
 from .client import Client
-from .base import Base
+from .client_request import ClientRequest
