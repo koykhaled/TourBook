@@ -1,7 +1,7 @@
 from datetime import datetime
 from django.db import models
 from Core.models.base import BaseModel
-from .Tour import Tour
+from .tour import Tour
 from Advertiser.models.offers import OfferRequest
 
 
