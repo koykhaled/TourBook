@@ -83,7 +83,7 @@ class UserAccount(AbstractBaseUser,PermissionsMixin):
 
     avatar = models.ImageField(upload_to='avatar/', null=True, blank=True)
     
-    role = models.CharField(max_length=10, choices=Role.choices, default=Role.CLIENT)
+    role = models.CharField( choices=Role.choices, default=Role.CLIENT)
     
     objects = UserAccountManager()
     

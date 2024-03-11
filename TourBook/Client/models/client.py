@@ -45,7 +45,7 @@ class Client(Base):
     first_name=models.CharField(max_length=255)
     middle_name=models.CharField(max_length=255 , null=True)
     last_name=models.CharField(max_length=255)
-    birth_date=models.DateField()
+    birth_date=models.DateTimeField()
     gender=models.CharField(max_length=1, choices=GenderChoices.choices)
     user=models.OneToOneField(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
 
