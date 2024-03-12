@@ -127,6 +127,9 @@ GitHub.sublime-settings
 !.vscode/extensions.json 
 .history
 
+#  Ignore Django migrations
+**/migrations/
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
