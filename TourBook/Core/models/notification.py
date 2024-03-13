@@ -11,6 +11,7 @@ class Notification (models.Model):
         user_id (UserAccount): The user associated with the notification.
     """
     content = models.CharField(max_length=150)
+    type = models.CharField(max_length=100)
     user_id = models.ForeignKey(
         UserAccount,
         on_delete=models.CASCADE

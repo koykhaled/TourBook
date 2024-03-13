@@ -9,8 +9,7 @@ class Attachment (models.Model):
         key (str) : The key of the attachment stored in AWS.
         type (FileField) : The file attachment  (allowed types: JPG, PDF, JPEG, and PNG).
     """
-    key = models.CharField(max_length=100)
-    type = models.FileField(upload_to='attachments/')
+    file = models.FileField(upload_to='attachments/')
 
     def clean(self):
         """
