@@ -1,6 +1,6 @@
 from django.db import models
 from django.conf import settings
-from .base import Base 
+from Core.models.base import BaseModel
 import re 
 
 class GenderChoices(models.TextChoices):
@@ -23,7 +23,7 @@ class GenderChoices(models.TextChoices):
         """
         gender_choices = [key for key,_ in GenderChoices.choices]
         return gender_choices
-class Client(Base):
+class Client(BaseModel):
         
     """
        Represents a client in the system.

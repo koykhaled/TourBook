@@ -1,6 +1,6 @@
 from django.db import models
 from .client import Client
-from .base import Base
+from Core.models.base import BaseModel
 from Tour_Organizer.models import Tour
 import re
 class SituationChoices(models.TextChoices):
@@ -27,7 +27,7 @@ class SituationChoices(models.TextChoices):
    
 
 
-class ClientRequest(Base):
+class ClientRequest(BaseModel):
     """
     Represents a client request for a tour.
 
@@ -46,7 +46,7 @@ class ClientRequest(Base):
     seat_num = models.IntegerField(default=0)
     situation = models.CharField(max_length=25, choices=SituationChoices.choices, default=SituationChoices.WATING)
     client_object = models.ForeignKey(Client,on_delete=models.CASCADE)
-    tour=models.ForeignKey(Tour , on_delete=models.CASCADE)
+    tour_object=models.ForeignKey(Tour , on_delete=models.CASCADE)
 
 
 

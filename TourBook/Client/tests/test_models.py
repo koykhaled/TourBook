@@ -73,10 +73,14 @@ class TestClientRequest(TestCase):
         )
         self.client_request1=ClientRequest.objects.create(
             seat_num=1,
-            situation='Pnk',
+            situation='P',
             client_object=self.client1,
             tour=self.tour1
             )
+        self.comments1=Comment.objects.create(
+            comments_field = '',
+            client_object=self.client1,
+            tour=self.tour1)
     
 
 
