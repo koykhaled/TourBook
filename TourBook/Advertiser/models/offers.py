@@ -3,6 +3,8 @@ from django.core.exceptions import ValidationError
 from Core.models.base import BaseModel
 from datetime import datetime
 import re
+
+from Advertiser.models.service import Service
 from .advertiser import Advertiser
 from Core.models.attachment import Attachment
 
@@ -29,6 +31,9 @@ class Offer(BaseModel):
     end_date = models.DateTimeField()
     advertiser_object = models.ForeignKey(
         Advertiser,
+        on_delete=models.CASCADE)
+    service_id = models.ForeignKey(
+        Service,
         on_delete=models.CASCADE)
 
     def clean(self):

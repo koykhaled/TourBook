@@ -25,7 +25,7 @@ class TourPoint(BaseModel):
     leaving_time = models.TimeField()
     axis_x = models.IntegerField(default=0)
     axis_y = models.IntegerField(default=0)
-
+    title = models.CharField(max_length=100)
     tour_object = models.ForeignKey(Tour, on_delete=models.CASCADE)
     offer_request = models.ForeignKey(OfferRequest, on_delete=models.CASCADE)
 
