@@ -88,7 +88,7 @@ WSGI_APPLICATION = 'TourBook.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'TourBook',
+        'NAME': 'tourbook',
         'USER': 'postgres',
         'PASSWORD': '1234',
         'HOST': 'localhost',

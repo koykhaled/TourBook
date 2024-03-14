@@ -1,7 +1,7 @@
 from django.test import TestCase
-from Admin.models import UserAccount
-from Tour_Organizer.models.TourOrganizer import TourOrganizer
-from Tour_Organizer.models.Tour import Tour
+from Core.models.user import UserAccount
+from Tour_Organizer.models.tour_organizer import TourOrganizer
+from Tour_Organizer.models.tour import Tour
 from django.contrib.auth.hashers import make_password
 from django.utils import timezone
 from django.core.exceptions import ValidationError
@@ -41,7 +41,7 @@ class TestTour(SetupMixin):
             starting_place='khaled toure',
             start_date="2024-3-9 12:09:00",
             end_date="2024-3-10 12:09:00",
-            seat_num=-2,
+            seat_num=2,
             tour_organizer=self.organizer1
         )
 

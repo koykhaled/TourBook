@@ -75,7 +75,7 @@ class Advertiser(BaseModel):
             return "Advertiser_"+self.place_name
 
 
-class Advertiser_Attachments(BaseModel):
+class AdvertiserAttachments(BaseModel):
     """
     This class represents an attachment associated with an advertiser.
     """
