@@ -11,17 +11,15 @@ class Subscription (models.Model):
         Start_Date (datetime): The start date and time of the subscription.
         End_Date (datetime): The end date and time of the subscription.
         Payment (Decimal): The payment associated with the subscription.
-        user (UserAccount): The user associated with the subscription.
+        user_id (UserAccount): The user associated with the subscription.
     """
     Start_Date = models.DateTimeField()
     End_Date = models.DateTimeField()
-    Payment = models.DecimalField(
-        max_digits=10, decimal_places=2, default=0.0)
-    user = models.ForeignKey(
+    Payment = models.DecimalField(max_length=15)
+    user_id = models.ForeignKey( 
         UserAccount,
-        on_delete=models.CASCADE
-    )
-
+        on_delete = models.CASCADE 
+        )
     def clean(self):
         """
         Performs validation on the model fields.
@@ -35,7 +33,6 @@ class Subscription (models.Model):
 
         if self.start_date >= self.end_date:
             raise ValueError("End Date can't be before Start Date!!")
-
     def save(self, *args, **kwargs):
         """
         Overrides the save method to format the start and end dates into datetime objects.

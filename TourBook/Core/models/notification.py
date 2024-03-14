@@ -12,7 +12,7 @@ class Notification (models.Model):
     """
     content = models.CharField(max_length=150)
     type = models.CharField(max_length=100)
-    user = models.ForeignKey(
+    user_id = models.ForeignKey(
         UserAccount,
         on_delete=models.CASCADE
     )
