@@ -1,6 +1,8 @@
 from django.db import models
 
 # Create your models here.
+
+
 class BaseModel(models.Model):
     """A base model representing common fields for other models.
 
@@ -27,3 +29,6 @@ class BaseModel(models.Model):
                 numeric_fields.append(field)
 
         return numeric_fields
+
+    class Meta:
+        abstract = True
