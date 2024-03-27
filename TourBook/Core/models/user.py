@@ -74,6 +74,8 @@ class UserAccountManager(BaseUserManager):
 class UserAccount(AbstractBaseUser, PermissionsMixin):
     """
     Custom user model representing a user account.
+    All User Types Model (Advertiser , Client , Organizer) Should be null for Manual Inserting 
+    only user_id should be fill automatic => sync with user regisetration
     """
 
     username = models.CharField(max_length=255, unique=True)
@@ -82,7 +84,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     email = models.EmailField(max_length=100, unique=True)
 
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     is_staff = models.BooleanField(default=False)
 

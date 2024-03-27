@@ -33,7 +33,7 @@ class TourOrganizer(BaseModel):
     - clean(): Performs validation on the model fields.
     - __str__(): Returns a string representation of the tour organizer.
     """
-    address = models.CharField(max_length=255)
+    address = models.CharField(max_length=255, null=True)
 
     evaluation = models.IntegerField(default=0)
 
