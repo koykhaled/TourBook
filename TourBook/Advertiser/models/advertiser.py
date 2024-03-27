@@ -32,12 +32,12 @@ class Advertiser(BaseModel):
 
     """
 
-    name = models.CharField(max_length=30)
+    name = models.CharField(max_length=30, null=True)
     situation = models.CharField(max_length=10,
                                  choices=Situation.choices, default=Situation.UNSUBCRIEPER)
     place_capacity = models.IntegerField(default=0)
     place_name = models.CharField(max_length=30)
-    link = models.URLField(unique=True)
+    link = models.URLField(unique=True, null=True)
     axis_x = models.FloatField(max_length=9, default=0)
     axis_y = models.FloatField(max_length=9, default=0)
     service = models.ManyToManyField(Service)

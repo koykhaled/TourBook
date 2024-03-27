@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,6 +38,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'djoser',
+    'accounts',
     'Advertiser',
     'Tour_Organizer',
     'Client',
@@ -114,6 +120,73 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "koykhaled@gmail.com"
+EMAIL_HOST_PASSWORD = "oepx iomz rzzu ehym"
+EMAIL_USE_TLS = True
+
+
+DJOSER = {
+    # login should be with email field
+    'LOGIN_FIELD': 'username',
+
+    # make user confirm his password
+    'USER_CREATE_PASSWORD_RETYPE': True,
+
+    # you need to pass re_new_username to /users/set_username/ endpoint, to validate username equality.
+    'SET_USERNAME_RETYPE': True,
+
+    # you need to pass re_new_password to /users/set_password/ endpoint, to validate password equality.
+    'SET_PASSWORD_RETYPE': True,
+
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+
+    # to send email confirmation for users when he want to change his password
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+
+    # route to send email message when user need to change his password
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+
+    # to send email confirmation for users when he want to change his email
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+
+    # to send confirmation email when user register
+    'SEND_CONFIRMATION_EMAIL': True,
+
+    # route to change username
+    'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
+
+    # to activate user after registeration
+    'ACTIVATION_URL': 'activate/{uid}/{token}',
+
+    # to recive activation email
+    'SEND_ACTIVATION_EMAIL': True,
+    'SERIALIZERS': {
+        'user_create': 'accounts.serializers.UserRegisterSerializer',
+        'user': 'accounts.serializers.UserSerializer',
+        'current_user': 'accounts.serializers.UserSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer',
+    },
+}
+
+REST_FRAMEWORK = {
+    # user should be authenticated before getting access to any route
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.0/topics/i18n/

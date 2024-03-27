@@ -1,30 +1,33 @@
 from django.db import models
 from django.conf import settings
 from Core.models.base import BaseModel
-import re 
+import re
+
 
 class GenderChoices(models.TextChoices):
-     """
-     A set of choices for representing gender options.
+    """
+    A set of choices for representing gender options.
 
-     Choices:
-        MALE: Male
-        FEMALE: Female
-     """
-     MALE="M","Male"
-     FEMALE="F","Female"    
+    Choices:
+       MALE: Male
+       FEMALE: Female
+    """
+    MALE = "M", "Male"
+    FEMALE = "F", "Female"
 
-     def get_values():
+    def get_values():
         """
         Get a list of valid gender choices.
 
         Returns:
             List[str]: A list of valid gender choices.
         """
-        gender_choices = [key for key,_ in GenderChoices.choices]
+        gender_choices = [key for key, _ in GenderChoices.choices]
         return gender_choices
+
+
 class Client(BaseModel):
-        
+
     """
        Represents a client in the system.
 
@@ -39,17 +42,21 @@ class Client(BaseModel):
        Inherits From:
         Base: The base model providing common fields and functionality.
 
-       
+
     """
-  
-    first_name=models.CharField(max_length=255)
-    middle_name=models.CharField(max_length=255 , null=True)
-    last_name=models.CharField(max_length=255)
-    birth_date=models.DateField()
-    gender=models.CharField(max_length=1, choices=GenderChoices.choices)
-    user=models.OneToOneField(settings.AUTH_USER_MODEL , on_delete=models.CASCADE)
 
+    first_name = models.CharField(max_length=255, null=True)
 
+    middle_name = models.CharField(max_length=255, null=True)
+
+    last_name = models.CharField(max_length=255, null=True)
+
+    birth_date = models.DateField(null=True)
+
+    gender = models.CharField(max_length=1, choices=GenderChoices.choices)
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def clean(self):
         """
@@ -60,11 +67,12 @@ class Client(BaseModel):
             ValueError: If the gender value is not one of the valid choices.
         """
         for field in self.get_char_fields():
-            if not re.match('^[A-z0-9\s]{4,}$',getattr(self,field.name)):
+            if not re.match('^[A-z0-9\s]{4,}$', getattr(self, field.name)):
                 raise ValueError(f"{field.name} is invalid")
 
         if self.gender not in GenderChoices.get_values():
-            raise ValueError(f"gender should be  {' or '.join(GenderChoices.get_values())}")
+            raise ValueError(
+                f"gender should be  {' or '.join(GenderChoices.get_values())}")
 
     def __str__(self):
         return "Client "+self.user.name
