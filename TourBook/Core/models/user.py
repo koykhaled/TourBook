@@ -11,6 +11,7 @@ class Role(models.TextChoices):
     ADVERTISER = "AD", "Advertiser"
     CLIENT = "C", "Client"
     ORGANIZER = "O", "Organizer"
+    SUPER_ADMIN = "SA", "Super Admin"
 
     def getRoleKeys():
         keys = [key for key, _ in Role.choices]
@@ -97,7 +98,7 @@ class UserAccount(AbstractBaseUser, PermissionsMixin):
 
     USERNAME_FIELD = 'username'
 
-    REQUIRED_FIELDS = ['phone', 'role']
+    REQUIRED_FIELDS = ['email', 'phone', 'role']
 
     def getUserName(self):
         return self.username
