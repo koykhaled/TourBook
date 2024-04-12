@@ -1,9 +1,19 @@
+import datetime
+import time
 from django.db import models
 from django.conf import settings
 from Core.models.base import BaseModel
+from django.core.files.storage import FileSystemStorage
+import uuid
+
 
 import re
 # Create your models here.
+
+
+def upload_to(instance, filename):
+    filename = instance.user.username + "."+filename.split('.')[-1]
+    return f"organizers/logos/{filename}"
 
 
 class Situation(models.TextChoices):
@@ -37,7 +47,8 @@ class TourOrganizer(BaseModel):
 
     evaluation = models.IntegerField(default=0)
 
-    logo = models.ImageField(upload_to='logos/', null=True, blank=True)
+    logo = models.ImageField(
+        upload_to=upload_to, null=True, blank=True)
 
     joined_at = models.DateTimeField(auto_now_add=True)
 
