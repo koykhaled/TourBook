@@ -8,21 +8,51 @@ from djoser.views import UserViewSet
 
 from .models.tour_organizer import TourOrganizer
 
-# Create your views here.
-
 
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer
     organizer_serializer_class = TourOrganizerSerializer
-    # permission_classes = []
 
     def get_organizer(self, request):
+        """
+        Retrieve the organizer data for the authenticated user.
+
+        This method returns the serialized data of the TourOrganizer instance associated with the authenticated user.
+        It checks if all fields in the serialized data have a value (not None) and sets the data_status accordingly.
+
+        Returns:
+            Response: Serialized data of the organizer and status indicating the data_status.
+        """
         user = request.user
+        data_status = 0
         organizer = TourOrganizer.objects.get(user=user)
         serializer = self.organizer_serializer_class(organizer)
-        return Response(serializer.data)
+        if all(value is not None for value in serializer.data.values()):
+            data_status = 1
+
+        return Response({
+            "data": serializer.data,
+            "status": data_status
+        }, status=status.HTTP_200_OK)
 
     def update_organizer(self, request):
+        """
+        Update the organizer data for the authenticated user.
+
+        This method allows updating the user and organizer data associated with the authenticated user.
+        It performs partial updates on the user and organizer instances based on the provided request data.
+
+        Args:
+            request (Request): The HTTP request containing the updated user and organizer data.
+            request contain to dictionaries :
+                user => contain user data [phone , email , username] for updating and send email when user change his email
+                organizer => contain organizer data [address , evaluation , situation , logo]
+
+
+
+        Returns:
+            Response: Serialized data of the updated organizer or error response if validation or update fails.
+        """
         try:
             user = request.user
             organizer = TourOrganizer.objects.get(user=user)

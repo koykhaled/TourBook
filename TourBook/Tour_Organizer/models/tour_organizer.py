@@ -39,7 +39,6 @@ class TourOrganizer(BaseModel):
     - user (OneToOneField): The user associated with the tour organizer.
 
     Methods:
-    - is_within(min_value, max_value, value): Checks if a value is within a specified range.
     - clean(): Performs validation on the model fields.
     - __str__(): Returns a string representation of the tour organizer.
     """

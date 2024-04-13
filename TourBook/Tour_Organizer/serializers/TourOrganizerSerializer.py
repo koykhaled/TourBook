@@ -13,35 +13,16 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         fields = ('user', 'address', 'evaluation', 'logo', 'situation')
         read_only_fields = ('user',)
 
-    def validate_logo(self, value):
-        # Check if a logo file is provided
-        if value is None:
-            return value
-
-        # Check the file size (e.g., limit to 5MB)
-        max_size = 5 * 1024 * 1024  # 5MB
-        if value.size > max_size:
-            raise serializers.ValidationError(
-                ("The logo file size should not exceed 5MB."))
-
-        # Check the file type (e.g., allow only JPEG and PNG)
-        allowed_types = ["image/jpeg", "image/png"]
-        if value.content_type not in allowed_types:
-            raise serializers.ValidationError(
-                ("Only JPEG and PNG image files are allowed."))
-
-        return value
-
     def validate(self, attrs):
         """
-        Performs validation on the model fields.
+        Performs validation on the serializer fields.
 
         Raises:
         - serializers.ValidationError: If any of the validation conditions fail.
         """
 
         errors = {}
-        if 'evaluation' in attrs and not self.is_within(0, 5, attrs['evaluation']):
+        if 'evaluation' in attrs and not is_within(0, 5, attrs['evaluation']):
             errors['evaluation'] = "Evaluation Must be between 0 and 5"
 
         if 'situation' in attrs and attrs['situation'] not in Situation.getSituationKeys():
@@ -84,5 +65,6 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         representation.update(user_data)
         return representation
 
-    def is_within(self, min_value, max_value, value):
-        return min_value <= value <= max_value
+
+def is_within(min_value, max_value, value):
+    return min_value <= value <= max_value
