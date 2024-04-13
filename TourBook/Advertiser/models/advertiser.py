@@ -23,7 +23,6 @@ class Advertiser(BaseModel):
     This class represents an advertiser in the system.
 
     Attribute:
-    - name (CharField) :  The name of the advertiser.
     - place_capacity (IntegerField) :  The capacity of the advertiser's place.
     - place_name (CharField) :  The name of the advertiser's place.
     - link (URLField) : The URL link associated with the advertiser's site or account on social media.
@@ -32,7 +31,6 @@ class Advertiser(BaseModel):
 
     """
 
-    name = models.CharField(max_length=30, null=True)
     situation = models.CharField(max_length=10,
                                  choices=Situation.choices, default=Situation.UNSUBCRIEPER)
     place_capacity = models.IntegerField(default=0)
@@ -52,11 +50,6 @@ class Advertiser(BaseModel):
         Raises:
         - ValueError: If any of the validation conditions fail.
         """
-        url_pattern = r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
-        if not bool(re.match(url_pattern, self.link)):
-            raise ValueError(
-                "Unvalid Link , please make sure that start with https")
-
         if self.situation not in Situation.getSituationKeys():
             raise ValueError(
                 f"Situation Must be one of {' ,'.join(Situation.getSituationKeys())}")

@@ -36,7 +36,6 @@ class Tour(BaseModel):
 
     like_counter = models.IntegerField(default=0)
     dislike_counter = models.IntegerField(default=0)
-    comment_counter = models.IntegerField(default=0)
 
     seat_num = models.IntegerField(default=0)
     seat_cost = models.DecimalField(

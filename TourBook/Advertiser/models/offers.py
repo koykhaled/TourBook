@@ -24,14 +24,20 @@ class Offer(BaseModel):
     """
 
     title = models.CharField(max_length=50)
+
     price_for_one = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0)
-    description = models.CharField(max_length=250)
+
+    description = models.TextField(max_length=250, blank=True, null=True)
+
     start_date = models.DateTimeField()
+
     end_date = models.DateTimeField()
+
     advertiser_object = models.ForeignKey(
         Advertiser,
         on_delete=models.CASCADE)
+
     service_id = models.ForeignKey(
         Service,
         on_delete=models.CASCADE)
@@ -80,7 +86,9 @@ class OfferRequest(BaseModel):
     - offer_object (ForeignKey) : a Foreign Key from Offer.
     """
     quantity = models.IntegerField(default=0)
+
     description = models.TextField(max_length=1000, blank=True, null=True)
+
     offer_object = models.ForeignKey(Offer, on_delete=models.CASCADE)
 
     def clean(self):

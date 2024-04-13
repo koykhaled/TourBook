@@ -1,5 +1,5 @@
 import re
-from djoser.serializers import UserSerializer, UserCreateSerializer, UserCreatePasswordRetypeSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
@@ -33,11 +33,11 @@ class UserRegisterSerializer(UserCreateSerializer):
             style={"input_type": "password"}
         )
 
-    def validate(self, attrs):
+    def validate(self, value):
         """Perform custom validation on user registration data.
 
         Args:
-            attrs (dict): The attribute dictionary containing the user registration data.
+            value (dict): The attribute dictionary containing the user registration data.
 
         Raises:
             serializers.ValidationError: If the username is invalid or password confirmation fails.
@@ -47,26 +47,27 @@ class UserRegisterSerializer(UserCreateSerializer):
             dict: The validated attribute dictionary.
 
         """
-        phone = attrs.get('phone')
-        username = attrs.get('username')
+        phone = value.get('phone')
+        username = value.get('username')
         self.fields.pop("re_password", None)
-        re_password = attrs.pop("re_password")
-        attrs = super().validate(attrs)
+        re_password = value.pop("re_password")
+        value = super().validate(value)
 
         if not re.match('^[A-z0-9\s_]{4,}$', username):
-            raise serializers.ValidationError({"username": "Invalid UserName"})
+            raise serializers.ValidationError(
+                {"username": "Enter a valid Username"})
 
-        if attrs["password"] != re_password:
+        if value["password"] != re_password:
             raise serializers.ValidationError(
                 {"password confirmation": "Password didn't Match"})
         else:
-            attrs['password'] = make_password(attrs['password'])
+            value['password'] = make_password(value['password'])
 
         if not bool(re.match(r'^[0-9]{10,20}$', phone)):
             raise serializers.ValidationError(
-                {"phone": "Invalid Phone, Please Enter a Valid Number!!"})
+                {"phone": "Enter a valid Phone"})
 
-        return attrs
+        return value
 
     class Meta(UserCreateSerializer.Meta):
         """Meta class for UserRegisterSerializer.
@@ -99,8 +100,15 @@ class UserSerializer(UserSerializer):
         }
 
     def validate(self, attrs):
-        phone = attrs.get('phone')
-        if not bool(re.match(r'^[0-9]{10,20}$', phone)):
-            raise serializers.ValidationError({"phone": "Invalid Phone"})
-        super().validate(attrs=attrs)
+        attrs = super().validate(attrs)
+        if 'phone' in attrs and not bool(re.match(r'^[0-9]{10,20}$', attrs['phone'])):
+            raise serializers.ValidationError(
+                {"phone": "Enter a valid Phone."})
+
+        attrs['username'] = self.initial_data.get(
+            'username', self.instance.username)
+        if not re.match(r'^[A-Za-z0-9\s\-_]{4,}$', attrs['username']):
+            raise serializers.ValidationError(
+                {"username": "Enter a valid  Username."})
+
         return attrs

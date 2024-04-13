@@ -40,9 +40,12 @@ class ClientRequest(BaseModel):
     """
 
     seat_num = models.IntegerField(default=0)
+
     situation = models.CharField(
         max_length=25, choices=SituationChoices.choices, default=SituationChoices.WATING)
+
     client_object = models.ForeignKey(Client, on_delete=models.CASCADE)
+
     tour_object = models.ForeignKey(Tour, on_delete=models.CASCADE)
 
     def clean(self):
@@ -53,7 +56,7 @@ class ClientRequest(BaseModel):
             ValueError: If the seat_num field is not a positive integer or the situation is not a valid choice.
         """
         if not bool(re.match('^[0-9]{1,}$', str(self.seat_num))):
-            raise ValueError(f"Seat numer must be Number")
+            raise ValueError(f"Seat num must be Number")
         if self.situation not in SituationChoices.get_setuation_keys():
             raise ValueError(
                 f"situation should be  {' or '.join(SituationChoices.get_setuation_keys())}")

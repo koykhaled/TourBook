@@ -68,7 +68,11 @@ class Client(BaseModel):
         """
         for field in self.get_char_fields():
             if not re.match('^[A-z0-9\s]{4,}$', getattr(self, field.name)):
-                raise ValueError(f"{field.name} is invalid")
+                raise ValueError(f"{field.name} is Invalid")
+
+        for field in self.get_numeric_fields():
+            if getattr(self, field.name) < 0:
+                raise ValueError(f"{field.name} should not be Negative")
 
         if self.gender not in GenderChoices.get_values():
             raise ValueError(
