@@ -6,12 +6,17 @@ from .serializers.TourOrganizerSerializer import TourOrganizerSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
+from Core.permissions import IsOrganizer
+
 from .models.tour_organizer import TourOrganizer
+
+# Create your views here.
 
 
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer
     organizer_serializer_class = TourOrganizerSerializer
+    permission_classes = [IsOrganizer]
 
     def get_organizer(self, request):
         """

@@ -13,8 +13,8 @@ class Service(BaseModel):
         """
         Validate that no Invalid String (service).
         """
-        if not bool(re.match(r'^ [A-z\s]{4, }$', self.service)):
-            raise ValueError(f"Invalid {self.service}")
+        if not bool(re.match(r'^ [A-z\s]{4, }$', self.service_field)):
+            raise ValueError(f"Invalid {self.service_field}")
 
     def __str__(self):
-        return self.service
+        return self.service_field

@@ -13,9 +13,9 @@ class Subscription (models.Model):
         Payment (Decimal): The payment associated with the subscription.
         user (UserAccount): The user associated with the subscription.
     """
-    Start_Date = models.DateTimeField()
-    End_Date = models.DateTimeField()
-    Payment = models.DecimalField(
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    payment = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0)
     user = models.ForeignKey(
         UserAccount,
@@ -45,3 +45,4 @@ class Subscription (models.Model):
 
         self.start_date = datetime.strptime(
             str(self.start_date), "%Y-%m-%d %H:%M:%S")
+        return super().save(*args, **kwargs)
