@@ -47,6 +47,7 @@ class UserRegisterSerializer(UserCreateSerializer):
             dict: The validated attribute dictionary.
 
         """
+        avatar = value.get('avatar')
         phone = value.get('phone')
         username = value.get('username')
         self.fields.pop("re_password", None)
@@ -81,7 +82,7 @@ class UserRegisterSerializer(UserCreateSerializer):
 
         """
         model = User
-        fields = ('id', 'email', 'username', 'phone', 'password', 'role')
+        fields = ('id', 'email', 'username', 'phone', 'password', 'role','avatar')
 
         extra_kwargs = {
             'password': {'write_only': True},
@@ -92,7 +93,7 @@ class UserSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'username', 'phone', 'password', 'role')
+        fields = ('id', 'email', 'username', 'phone', 'password', 'role','avatar')
         extra_kwargs = {
             "password": {
                 "write_only": True

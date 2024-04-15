@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
-
+import cloudinary
 from datetime import timedelta
 from pathlib import Path
 import os
@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-d4v#k_pwdnqp3-0wu-3cfbaz+a$k$98-x0@wmn4p8ukw_ybj@0
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -50,6 +50,8 @@ INSTALLED_APPS = [
     'Client',
     'Core',
     'django_cleanup.apps.CleanupConfig',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -207,7 +209,7 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
 
 # Media File Directory for store files
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -225,3 +227,12 @@ AUTH_USER_MODEL = 'Core.UserAccount'
 SPECTACULAR_SETTINGS = {
     'TITLE': "TourBook API's",
 }
+      
+
+          
+CLOUDINARY_STORAGE = { 
+  'CLOUD_NAME' : "dntpfwkri", 
+  'API_KEY' : "345918894245781", 
+  'API_SECRET': "DO-7twxcq8ncg1FLMwxVlHpO9E4" 
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
