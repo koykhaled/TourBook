@@ -1,9 +1,12 @@
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status , generics
 from django.core.exceptions import ValidationError
 
-from .serializers.AdvertiserSerializers import AdvertiserSerializers
-from accounts.serializers import UserSerializer
+from Core.models.user import UserAccount
+from Advertiser.models.offers import Offer
+
+from .serializers.AdvertiserSerializers import AdvertiserSerializers , OfferSerializer
+from accounts.serializers import User, UserSerializer
 
 from Core.permissions import IsOrganizer
 
@@ -17,16 +20,30 @@ from rest_framework.response import Response
 class AdvertiserView(APIView):
     serializer_class = AdvertiserSerializers
 
-    def get(self, request):
-        user = request.user
+    def get(self, request):        
         try:
-            advertiser = Advertiser.objects.get(user=user)
-            serializer = self.serializer_class(advertiser)
-            if all(value is not None for value in serializer.data.values()):
-                data_status = 1
+            advertisers = Advertiser.objects.all()
+            serializer = self.serializer_class(advertisers, many=True)
 
-            return Response( serializer.data , 
-                            status=status.HTTP_200_OK
-                            )
+            return Response(serializer.data, status=status.HTTP_200_OK)
         except Advertiser.DoesNotExist:
             return Response({"detail": "Advertiser not found."}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class SingleAdvertiserAPIView(APIView):
+    serializer_class = AdvertiserSerializers
+    queryset = Advertiser.objects.all()
+    lookup_field = 'user'
+
+    def get(self, request, user):
+        try:
+            advertiser = Advertiser.objects.select_related('user').prefetch_related('offers').get(user=user)
+            serializer = AdvertiserSerializers(advertiser)
+            return Response(serializer.data)
+        except Advertiser.DoesNotExist:
+            return Response({'error': 'Advertiser not found'}, status=404)
+
+class OfferListAPIView(generics.ListAPIView):
+    queryset = Offer.objects.all()
+    serializer_class = OfferSerializer
