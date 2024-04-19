@@ -15,6 +15,7 @@ class Offer(BaseModel):
 
     Attribute:
     - start_date (DateTimeField) : The start date and time of the offer
+    - num_of_seat (IntegerField) : the number of seat for offer .
     - end_date (DateTimeField) : The end date and time of the offer
     - price_for_one (DecimalField) : The price for one unit of the offer.
     - title (CharField) :     The title of the offer.
@@ -24,6 +25,8 @@ class Offer(BaseModel):
     """
 
     title = models.CharField(max_length=50)
+
+    num_of_seat = models.IntegerField(max_length=5)
 
     price_for_one = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0)
@@ -36,9 +39,9 @@ class Offer(BaseModel):
 
     advertiser_object = models.ForeignKey(
         Advertiser,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE,related_name='offers')
 
-    service_id = models.ForeignKey(
+    service = models.ForeignKey(
         Service,
         on_delete=models.CASCADE)
 
@@ -62,6 +65,9 @@ class Offer(BaseModel):
 
         if not re.match(r'^[A-z0-9\s]{4,}$', self.title):
             raise ValueError(f"Invalid {self.title}")
+        
+        if self.num_of_seat > self.advertiser_object.place_capacity:
+            raise ValidationError("Number of seats cannot exceed the place capacity of the advertiser.")
 
     def save(self, *args, **kwargs):
         """
@@ -81,16 +87,15 @@ class OfferRequest(BaseModel):
     This class represents an offer Request that Requsted from Organizer
 
     Attribute:
-    - quantity (IntegerField) : The quantity for seats in the offer.
+    - num_of_seat (IntegerField) : The quantity for seats in the offer.
     - description (CharField) : The description of the offer request.
     - offer_object (ForeignKey) : a Foreign Key from Offer.
     """
-    quantity = models.IntegerField(default=0)
+    num_of_seat = models.IntegerField(default=0)
 
     description = models.TextField(max_length=1000, blank=True, null=True)
 
-    offer_object = models.ForeignKey(Offer, on_delete=models.CASCADE)
-
+    offer_object = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_requests')
     def clean(self):
         """
         Validate that no numeric field has a negative value.
@@ -107,7 +112,7 @@ class Offer_Attachments(BaseModel):
     """
     offer_object = models.ForeignKey(
         Offer,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE, related_name='offer_attachments')
     attachment_object = models.ForeignKey(
         Attachment,
         on_delete=models.CASCADE)
