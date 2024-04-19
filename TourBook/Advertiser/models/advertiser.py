@@ -74,7 +74,7 @@ class AdvertiserAttachments(BaseModel):
     """
     advertiser_object = models.ForeignKey(
         Advertiser,
-        on_delete=models.CASCADE)
-    attachment = models.ForeignKey(
+        on_delete=models.CASCADE ,related_name='advertiser_attachments')
+    attachment_object = models.ForeignKey(
         Attachment,
         on_delete=models.CASCADE)
