@@ -28,6 +28,13 @@ class OfferAttachmentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Offer_Attachments
         fields = ['attachment_object']
+
+class AdvertiserAttachmentsSerializers(serializers.ModelSerializer):
+    attachment_object = AttachmentSerializer()
+
+    class Meta:
+        model = AdvertiserAttachments
+        fields = ['attachment_object']
 class OfferRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferRequest
@@ -47,10 +54,11 @@ class AdvertiserSerializers(serializers.ModelSerializer):
     service = ServiceSerializer(many=True)
     offers = OfferSerializer(many=True, read_only=True)
     available_seats = serializers.SerializerMethodField()
+    advertiser_attachments = AdvertiserAttachmentsSerializers(many=True, read_only=True)
 
     class Meta :
         model = Advertiser
-        fields = ['situation','user','place_capacity','place_name','link','axis_x','axis_y','service','offers','available_seats']
+        fields = ['situation','user','place_capacity','place_name','link','axis_x','axis_y','service','offers','available_seats','advertiser_attachments']
         read_only_fields = ('user', 'available_seats')
 
     def get_available_seats(self, obj):
