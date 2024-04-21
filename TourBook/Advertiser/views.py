@@ -4,6 +4,7 @@ from django.core.exceptions import ValidationError
 
 from Core.models.user import UserAccount
 from Advertiser.models.offers import Offer
+from .serializers.OfferSerializer import ActiveOffersSerializer
 
 from .serializers.AdvertiserSerializers import AdvertiserSerializers , OfferSerializer
 from accounts.serializers import User, UserSerializer
@@ -53,6 +54,6 @@ class OfferListAPIView(generics.ListAPIView):
 class ActiveOffersAPIView(APIView):
     def get(self, request):
         current_date = datetime.now()
-        active_offers = Offer.objects.filter(end_date__gte=current_date)
-        serializer = OfferSerializer(active_offers, many=True)
+        active_offers = Offer.objects.filter(end_date__gt=current_date)
+        serializer = ActiveOffersSerializer(active_offers, many=True)
         return Response(serializer.data)

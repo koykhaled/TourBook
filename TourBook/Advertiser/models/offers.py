@@ -26,7 +26,7 @@ class Offer(BaseModel):
 
     title = models.CharField(max_length=50)
 
-    num_of_seat = models.IntegerField()
+    num_of_seat = models.IntegerField(max_length=5)
 
     price_for_one = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0)
