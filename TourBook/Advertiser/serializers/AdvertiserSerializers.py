@@ -42,6 +42,8 @@ class OfferRequestSerializer(serializers.ModelSerializer):
 class OfferSerializer(serializers.ModelSerializer):
     offer_attachments = OfferAttachmentsSerializer(many=True, source='offer_attachments.all')
     offer_requests = OfferRequestSerializer(many=True, read_only=True)
+    start_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
+    end_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = Offer

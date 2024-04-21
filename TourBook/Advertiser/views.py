@@ -8,7 +8,7 @@ from .serializers.OfferSerializer import ActiveOffersSerializer
 
 from .serializers.AdvertiserSerializers import AdvertiserSerializers , OfferSerializer
 from accounts.serializers import User, UserSerializer
-
+from django.db.models import Q
 from Core.permissions import IsOrganizer
 from datetime import datetime, timedelta
 from .models.advertiser import Advertiser
@@ -51,9 +51,32 @@ class OfferListAPIView(generics.ListAPIView):
 
 
 
+# class ActiveOffersAPIView(APIView):
+#     def get(self, request):
+#         current_date = datetime.now()
+#         active_offers = Offer.objects.filter(end_date__gt=current_date)
+#         serializer = ActiveOffersSerializer(active_offers, many=True)
+#         return Response(serializer.data)
 class ActiveOffersAPIView(APIView):
     def get(self, request):
         current_date = datetime.now()
-        active_offers = Offer.objects.filter(end_date__gt=current_date)
+        query = Q(end_date__gt=current_date)
+
+        day = request.GET.get('day')
+        if day:
+            # Filter by day (end_date__date > given day)
+            query &= Q(end_date__date__gt=day)
+
+        service = request.GET.get('service')
+        if service:
+            # Filter by service
+            query &= Q(service__service_field=service)
+
+        title = request.GET.get('title')
+        if title:
+            # Filter by title
+            query &= Q(title__icontains=title)
+
+        active_offers = Offer.objects.filter(query)
         serializer = ActiveOffersSerializer(active_offers, many=True)
         return Response(serializer.data)
