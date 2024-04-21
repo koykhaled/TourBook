@@ -9,7 +9,7 @@ from .serializers.AdvertiserSerializers import AdvertiserSerializers , OfferSeri
 from accounts.serializers import User, UserSerializer
 
 from Core.permissions import IsOrganizer
-
+from datetime import datetime, timedelta
 from .models.advertiser import Advertiser
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -47,3 +47,12 @@ class SingleAdvertiserAPIView(APIView):
 class OfferListAPIView(generics.ListAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+
+
+
+class ActiveOffersAPIView(APIView):
+    def get(self, request):
+        current_date = datetime.now()
+        active_offers = Offer.objects.filter(end_date__gte=current_date)
+        serializer = OfferSerializer(active_offers, many=True)
+        return Response(serializer.data)
