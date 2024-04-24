@@ -8,6 +8,15 @@ from Advertiser.models.service import Service
 from .advertiser import Advertiser
 from Core.models.attachment import Attachment
 
+class Status(models.TextChoices):
+    WAITING = "W", "Waiting"
+    ACCEPTED = "A", "Accepted"
+    REJECTED = "R", "Rejected"
+
+    def getSituationKeys():
+        keys = [key for key, _ in Status.choices]
+        return keys
+
 
 class Offer(BaseModel):
     """
@@ -26,7 +35,7 @@ class Offer(BaseModel):
 
     title = models.CharField(max_length=50)
 
-    num_of_seat = models.IntegerField(max_length=5)
+    num_of_seat = models.IntegerField()
 
     price_for_one = models.DecimalField(
         max_digits=10, decimal_places=2, default=0.0)
@@ -94,6 +103,9 @@ class OfferRequest(BaseModel):
     num_of_seat = models.IntegerField(default=0)
 
     description = models.TextField(max_length=1000, blank=True, null=True)
+    status= models.CharField(max_length=10,
+                                 choices=Status.choices, default=Status.WAITING)
+    
 
     offer_object = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_requests')
     def clean(self):

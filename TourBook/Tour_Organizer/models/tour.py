@@ -53,9 +53,9 @@ class Tour(BaseModel):
     end_date = models.DateTimeField()
 
     note = models.TextField(blank=True, null=True)
-
+    posted = models.BooleanField(default=0)
     tour_organizer = models.ForeignKey(TourOrganizer, on_delete=models.CASCADE)
-
+    
     @property
     def calculate_total_cost(self):
         """

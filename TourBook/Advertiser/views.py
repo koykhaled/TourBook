@@ -49,14 +49,6 @@ class OfferListAPIView(generics.ListAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
 
-
-
-# class ActiveOffersAPIView(APIView):
-#     def get(self, request):
-#         current_date = datetime.now()
-#         active_offers = Offer.objects.filter(end_date__gt=current_date)
-#         serializer = ActiveOffersSerializer(active_offers, many=True)
-#         return Response(serializer.data)
 class ActiveOffersAPIView(APIView):
     def get(self, request):
         current_date = datetime.now()

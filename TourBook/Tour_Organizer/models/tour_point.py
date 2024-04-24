@@ -26,7 +26,7 @@ class TourPoint(BaseModel):
     axis_x = models.IntegerField(default=0)
     axis_y = models.IntegerField(default=0)
     tour_object = models.ForeignKey(Tour, on_delete=models.CASCADE)
-    offer_request = models.ForeignKey(OfferRequest, on_delete=models.CASCADE)
+    offer_request = models.OneToOneField(OfferRequest, on_delete=models.CASCADE)
 
     def clean(self):
         """
