@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views import TourOrganizerView
+from .views import TourCreateView, TourOrganizerView
 
 app_name = 'tour_organizer'
 
@@ -17,4 +17,5 @@ organizer_patterns = [
 
 urlpatterns = [
     path('organizers/', include(organizer_patterns)),
+    path('create/', TourCreateView.as_view(), name='tour-create'),
 ]
