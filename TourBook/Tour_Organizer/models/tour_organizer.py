@@ -3,17 +3,10 @@ import time
 from django.db import models
 from django.conf import settings
 from Core.models.base import BaseModel
-from django.core.files.storage import FileSystemStorage
-import uuid
-
+from Core.helpers import upload_to
 
 import re
 # Create your models here.
-
-
-def upload_to(instance, filename):
-    filename = instance.user.username + "."+filename.split('.')[-1]
-    return f"organizers/logos/{filename}"
 
 
 class Situation(models.TextChoices):
@@ -43,6 +36,8 @@ class TourOrganizer(BaseModel):
     - __str__(): Returns a string representation of the tour organizer.
     """
     address = models.CharField(max_length=255, null=True)
+
+    path = 'organizers/logos/'
 
     evaluation = models.IntegerField(default=0)
 
@@ -75,4 +70,4 @@ class TourOrganizer(BaseModel):
             raise ValueError("Unvalid Organizer Address")
 
     def __str__(self):
-        return "Organizer_"+self.user.name
+        return "Organizer_"+self.user.username

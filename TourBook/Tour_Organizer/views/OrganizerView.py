@@ -5,15 +5,15 @@ from django.core.exceptions import ValidationError
 
 from Tour_Organizer.models.tour_point import TourPoint
 from Tour_Organizer.models.tour import Tour
-from Tour_Organizer.serializers.TourPointSerializer import  TourSerializer
+from Tour_Organizer.serializers.TourPointSerializer import TourSerializer
 
-from .serializers.TourOrganizerSerializer import TourOrganizerSerializer
+from ..serializers.TourOrganizerSerializer import TourOrganizerSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
 from Core.permissions import IsOrganizer
 
-from .models.tour_organizer import TourOrganizer
+from ..models.tour_organizer import TourOrganizer
 
 # Create your views here.
 
@@ -105,63 +105,3 @@ class TourOrganizerView(UserViewSet):
                 {'error': str(e.get)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
-from rest_framework.views import APIView
-from rest_framework import generics
-from .models import Tour
-
-
-class TourCreateView(generics.CreateAPIView):
-    queryset = Tour.objects.all()
-    serializer_class = TourSerializer
-
-
-
-    def create(self, request, *args, **kwargs):
-        required_fields = ['user_id', 'title','end_date','start_date','y_starting_place','x_starting_place','transportation_cost','seat_cost','seat_num','starting_place']
-
-        # Check if any required field is missing
-        missing_fields = [field for field in required_fields if field not in request.data]
-        if missing_fields:
-            response_data = {
-                'message': f"Missing required fields: {', '.join(missing_fields)}"
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        # Get the user ID from the request data
-        user_id = request.data.get('user_id')
-
-        # Check if the tour organizer exists
-        try:
-            tour_organizer = TourOrganizer.objects.get(id=user_id)
-        except TourOrganizer.DoesNotExist:
-            response_data = {
-                'message': 'Tour organizer does not exist.'
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        # Add the tour organizer to the request data
-        request.data['tour_organizer'] = user_id
-
-        # Check if a tour with the same title already exists for the tour organizer
-        title = request.data.get('title')
-        if Tour.objects.filter(title=title, tour_organizer=tour_organizer).exists():
-            response_data = {
-                'message': 'A tour with the same title already exists for the tour organizer.'
-            }
-            return Response(response_data, status=status.HTTP_400_BAD_REQUEST)
-
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        # Set the 'posted' field based on the default value
-        posted = request.data.get('posted', False)
-        serializer.save(posted=posted)
-
-        tour_id = serializer.instance.id
-        response_data = {
-            'message': 'Tour created successfully.',
-            'id': tour_id
-        }
-        return Response(response_data, status=status.HTTP_201_CREATED)
