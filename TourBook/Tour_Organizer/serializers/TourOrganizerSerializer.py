@@ -11,7 +11,6 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
     class Meta:
         model = TourOrganizer
         fields = ('user', 'address', 'evaluation', 'logo', 'situation')
-        read_only_fields = ('user',)
 
     def validate(self, attrs):
         """

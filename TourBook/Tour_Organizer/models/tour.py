@@ -3,6 +3,8 @@ from Core.models.base import BaseModel
 from .tour_organizer import TourOrganizer
 from datetime import datetime
 
+from decimal import Decimal
+
 import re
 
 
@@ -55,16 +57,17 @@ class Tour(BaseModel):
     note = models.TextField(blank=True, null=True)
     posted = models.BooleanField(default=0)
     tour_organizer = models.ForeignKey(TourOrganizer, on_delete=models.CASCADE)
-    
+
     @property
     def calculate_total_cost(self):
         """
         total cost is a driven field can calcualte from other fields
         property to calculate total_cost fields by sum seats , transportaion and extra cost
         """
-        seats_cost = self.seat_num * self.seat_cost
-        total_cost = seats_cost + self.extra_cost + self.transportation_cost
-        return total_cost
+        seats_cost = Decimal(self.seat_num * self.seat_cost)
+        total_cost = Decimal(seats_cost) + Decimal(self.extra_cost +
+                                                   self.transportation_cost)
+        return float(total_cost)
 
     def clean(self):
         """
