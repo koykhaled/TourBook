@@ -25,10 +25,13 @@ class BaseModel(models.Model):
         numeric_fields = []
         fields = self._meta.get_fields()
         for field in fields:
-            if isinstance(field, models.IntegerField) or isinstance(field, models.DecimalField):
+            if field.name != 'id' and isinstance(field, models.IntegerField) or isinstance(field, models.DecimalField):
                 numeric_fields.append(field)
 
         return numeric_fields
+
+    def is_within(self, min_value, max_value, value):
+        return min_value <= value <= max_value
 
     class Meta:
         abstract = True

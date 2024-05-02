@@ -1,5 +1,4 @@
-import datetime
-import time
+
 from django.db import models
 from django.conf import settings
 from Core.models.base import BaseModel

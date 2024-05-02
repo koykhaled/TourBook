@@ -8,6 +8,7 @@ from Advertiser.models.service import Service
 from .advertiser import Advertiser
 from Core.models.attachment import Attachment
 
+
 class Status(models.TextChoices):
     WAITING = "W", "Waiting"
     ACCEPTED = "A", "Accepted"
@@ -48,7 +49,7 @@ class Offer(BaseModel):
 
     advertiser_object = models.ForeignKey(
         Advertiser,
-        on_delete=models.CASCADE,related_name='offers')
+        on_delete=models.CASCADE, related_name='offers')
 
     service = models.ForeignKey(
         Service,
@@ -74,9 +75,10 @@ class Offer(BaseModel):
 
         if not re.match(r'^[A-z0-9\s]{4,}$', self.title):
             raise ValueError(f"Invalid {self.title}")
-        
+
         if self.num_of_seat > self.advertiser_object.place_capacity:
-            raise ValidationError("Number of seats cannot exceed the place capacity of the advertiser.")
+            raise ValidationError(
+                "Number of seats cannot exceed the place capacity of the advertiser.")
 
     def save(self, *args, **kwargs):
         """
@@ -103,11 +105,12 @@ class OfferRequest(BaseModel):
     num_of_seat = models.IntegerField(default=0)
 
     description = models.TextField(max_length=1000, blank=True, null=True)
-    status= models.CharField(max_length=10,
-                                 choices=Status.choices, default=Status.WAITING)
-    
+    status = models.CharField(max_length=10,
+                              choices=Status.choices, default=Status.WAITING)
 
-    offer_object = models.ForeignKey(Offer, on_delete=models.CASCADE, related_name='offer_requests')
+    offer_object = models.ForeignKey(
+        Offer, on_delete=models.CASCADE, related_name='offer_requests')
+
     def clean(self):
         """
         Validate that no numeric field has a negative value.

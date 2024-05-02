@@ -79,4 +79,4 @@ class Client(BaseModel):
                 f"gender should be  {' or '.join(GenderChoices.get_values())}")
 
     def __str__(self):
-        return "Client "+self.user.name
+        return "Client "+self.user.username

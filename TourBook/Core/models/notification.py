@@ -1,8 +1,9 @@
 from django.db import models
 from .user import UserAccount
+from .base import BaseModel
 
 
-class Notification (models.Model):
+class Notification (BaseModel):
     """
     Model representing a notification.
 

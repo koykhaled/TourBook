@@ -3,6 +3,7 @@ from django.contrib import admin
 from .models.tour_organizer import TourOrganizer
 from .models.tour import Tour
 from .models.tour_point import TourPoint
+from .models.tour_attachment import TourAttachment
 # Register your models here.
 
 
@@ -27,3 +28,4 @@ class TourPointAdmin(admin.ModelAdmin):
 admin.site.register(TourOrganizer, TourOrganizerAdmin)
 admin.site.register(Tour, TourAdmin)
 admin.site.register(TourPoint, TourPointAdmin)
+admin.site.register(TourAttachment)

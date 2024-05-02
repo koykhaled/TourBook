@@ -25,8 +25,10 @@ class TourPoint(BaseModel):
     leaving_time = models.TimeField()
     axis_x = models.IntegerField(default=0)
     axis_y = models.IntegerField(default=0)
-    tour_object = models.ForeignKey(Tour, on_delete=models.CASCADE)
-    offer_request = models.OneToOneField(OfferRequest, on_delete=models.CASCADE)
+    tour_object = models.ForeignKey(
+        Tour, on_delete=models.CASCADE, related_name="tour_points")
+    offer_request = models.OneToOneField(
+        OfferRequest, on_delete=models.CASCADE, related_name="offer_point_request")
 
     def clean(self):
         """
@@ -55,4 +57,4 @@ class TourPoint(BaseModel):
                         f"{field.name} Should NOT be Negative")
 
     def __str__(self):
-        return self.tour.title + " Point"
+        return self.tour_object.title + " Point"
