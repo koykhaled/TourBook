@@ -44,9 +44,11 @@ class ClientRequest(BaseModel):
     situation = models.CharField(
         max_length=25, choices=SituationChoices.choices, default=SituationChoices.WATING)
 
-    client_object = models.ForeignKey(Client, on_delete=models.CASCADE)
+    client_object = models.ForeignKey(
+        Client, on_delete=models.CASCADE, related_name="client_requests")
 
-    tour_object = models.ForeignKey(Tour, on_delete=models.CASCADE)
+    tour_object = models.ForeignKey(
+        Tour, on_delete=models.CASCADE, related_name='tour_requests')
 
     def clean(self):
         """

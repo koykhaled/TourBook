@@ -13,7 +13,7 @@ class TourAttachment(BaseModel):
         on_delete=models.CASCADE, related_name="tour_attachments")
     attachment = models.ForeignKey(
         Attachment,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE, related_name="attachments")
 
     class Meta:
         db_table = 'tour_attachments'
