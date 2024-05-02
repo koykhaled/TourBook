@@ -1,8 +1,12 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
+from Advertiser.models.advertiser import Advertiser
+
 from Core.permissions import IsOrganizer
 from ..serializers.TourSerializer import TourSerializer
+
+from Client.models.client import Client
 
 from ..models.tour import Tour
 
@@ -146,7 +150,7 @@ class TourView(viewsets.ModelViewSet):
             )
         except exceptions.ObjectDoesNotExist as e:
             return Response({
-                'errors': str(e)
+                'errors': "Tour dose not exist!!"
             },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -163,4 +167,35 @@ class TourView(viewsets.ModelViewSet):
                 'errors': serializer.errors
             },
                 status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def delete(self, request, tour_id):
+        try:
+            tour = Tour.objects.get(pk=tour_id)
+            tour.delete()
+            return Response(
+                {
+                    'message': "Tour Deleted Successfully"
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            return Response({
+                'errors': "Tour dose not exist!!"
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        except (exceptions.ValidationError, TypeError) as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
