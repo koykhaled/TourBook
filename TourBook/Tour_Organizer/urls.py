@@ -22,12 +22,14 @@ tour_patterns = [
         'post': 'create',
     })),
     path('<int:tour_id>/', TourView.as_view({
+        'get': 'get_tour',
         'patch': 'update',
-        'get': 'get_tour'
+        'delete': 'delete',
     })),
     path('other-organizers-tours/', TourView.as_view({
         'get': 'get_other_organizers_tours'
-    }))
+    })),
+
 ]
 
 urlpatterns = [
