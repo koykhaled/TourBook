@@ -23,6 +23,7 @@ class TourView(viewsets.ModelViewSet):
             tours = Tour.objects.filter(
                 tour_organizer=tour_organizer).prefetch_related('tour_organizer')
             serializer = self.serializer_class(tours, many=True)
+
             return Response(
                 {
                     'data': serializer.data,
@@ -42,7 +43,7 @@ class TourView(viewsets.ModelViewSet):
             return Response({
                 'errors': str(e)
             },
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def get_other_organizers_tours(self, request):
@@ -106,6 +107,7 @@ class TourView(viewsets.ModelViewSet):
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(tour_organizer=tour_organizer)
+            print(request.data)
             return Response(
                 {
                     'data': serializer.data,

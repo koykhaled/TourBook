@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .TourOrganizerSerializer import TourOrganizerSerializer
+from .TourAttachmentSerializer import TourAttachmentSerializer
 from ..models.tour import Tour
 
 from datetime import datetime
@@ -7,7 +8,9 @@ import re
 
 
 class TourSerializer(serializers.ModelSerializer):
+    tour_attachments = TourAttachmentSerializer(many=True, required=False)
     tour_organizer = TourOrganizerSerializer(read_only=True)
+    status = serializers.SerializerMethodField('get_status')
 
     class Meta:
         model = Tour
@@ -30,6 +33,8 @@ class TourSerializer(serializers.ModelSerializer):
             'note',
             'posted',
             'tour_organizer',
+            'tour_attachments',
+            'status'
         )
         read_only_fields = ('total_cost', 'tour_organizer')
 
@@ -78,4 +83,46 @@ class TourSerializer(serializers.ModelSerializer):
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
+        # print(attrs)
         return attrs
+
+    def to_internal_value(self, data):
+        attachments_data = data.pop('tour_attachments', [])
+        self.fields['tour_attachments'] = TourAttachmentSerializer(
+            many=True, required=False)
+        validated_data = super().to_internal_value(data)
+        validated_data['tour_attachments'] = attachments_data
+        return validated_data
+
+    def get_status(self, tour):
+        is_accepted = 0
+        if len(tour.tour_points.all()) > 0:
+            is_accepted = all(
+                tour_point.offer_request.status == "A"
+                for tour_point in tour.tour_points.all()
+            )
+        return 1 if is_accepted else 0
+
+    def create(self, validated_data):
+        tour_attachments_data = validated_data.pop('tour_attachments', [])
+        tour = Tour.objects.create(**validated_data)
+
+        for attachment_data in tour_attachments_data:
+            attachment_serializer = TourAttachmentSerializer(
+                data=attachment_data)
+            attachment_serializer.is_valid(raise_exception=True)
+            attachment_serializer.save(tour_object=tour)
+
+        return tour
+
+    def update(self, instance, validated_data):
+        tour_attachments_data = validated_data.pop('tour_attachments', [])
+
+        for attachment_data in tour_attachments_data:
+            attachment_serializer = TourAttachmentSerializer(
+                data=attachment_data)
+            attachment_serializer.is_valid(raise_exception=True)
+            attachment_serializer.save(tour_object=instance)
+
+        instance = super().update(instance, validated_data)
+        return instance
