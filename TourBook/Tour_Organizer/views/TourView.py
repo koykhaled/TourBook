@@ -1,12 +1,10 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from Advertiser.models.advertiser import Advertiser
 
-from Core.permissions import IsOrganizer
+from Core.permissions import IsOrganizer, IsOrganizerOwnerOrReadOnly
 from ..serializers.TourSerializer import TourSerializer
 
-from Client.models.client import Client
 
 from ..models.tour import Tour
 
@@ -15,7 +13,7 @@ from django.core import exceptions
 
 class TourView(viewsets.ModelViewSet):
     serializer_class = TourSerializer
-    permission_classes = [IsOrganizer]
+    permission_classes = [IsOrganizer, IsOrganizerOwnerOrReadOnly]
 
     def get_organizer_tours(self, request):
         try:
@@ -107,7 +105,6 @@ class TourView(viewsets.ModelViewSet):
             serializer = self.serializer_class(data=request.data)
             serializer.is_valid(raise_exception=True)
             serializer.save(tour_organizer=tour_organizer)
-            print(request.data)
             return Response(
                 {
                     'data': serializer.data,

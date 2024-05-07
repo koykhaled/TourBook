@@ -82,7 +82,8 @@ class UserRegisterSerializer(UserCreateSerializer):
 
         """
         model = User
-        fields = ('id', 'email', 'username', 'phone', 'password', 'role','avatar')
+        fields = ('id', 'email', 'username', 'phone',
+                  'password', 'role', 'avatar')
 
         extra_kwargs = {
             'password': {'write_only': True},
@@ -93,7 +94,8 @@ class UserSerializer(UserSerializer):
 
     class Meta(UserSerializer.Meta):
         model = User
-        fields = ('id', 'email', 'username', 'phone', 'password', 'role','avatar')
+        fields = ('id', 'email', 'username', 'phone',
+                  'password', 'role', 'avatar')
         extra_kwargs = {
             "password": {
                 "write_only": True
@@ -102,14 +104,13 @@ class UserSerializer(UserSerializer):
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
+        errors = {}
         if 'phone' in attrs and not bool(re.match(r'^[0-9]{10,20}$', attrs['phone'])):
-            raise serializers.ValidationError(
-                {"phone": "Enter a valid Phone."})
-
+            errors["phone"] = "Enter a valid Phone."
         attrs['username'] = self.initial_data.get(
             'username', self.instance.username)
         if not re.match(r'^[A-Za-z0-9\s\-_]{4,}$', attrs['username']):
-            raise serializers.ValidationError(
-                {"username": "Enter a valid  Username."})
-
+            errors["username"] = "Enter a valid  Username."
+        if len(errors) > 0:
+            raise serializers.ValidationError(errors)
         return attrs

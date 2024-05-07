@@ -19,10 +19,11 @@ class TourPoint(BaseModel):
         tour_object (Tour): The foreign key to the Tour model, specifying the tour to which this point belongs.
         offer_request (OfferRequest): The foreign key to the OfferRequest model, specifying the offer request associated with this point.
     """
+    title = models.CharField(max_length=255)
     position = models.IntegerField(default=0)
     description = models.TextField(max_length=1000, blank=True, null=True)
-    arrival_time = models.TimeField()
-    leaving_time = models.TimeField()
+    arrival_time = models.DateTimeField()
+    leaving_time = models.DateTimeField()
     axis_x = models.IntegerField(default=0)
     axis_y = models.IntegerField(default=0)
     tour_object = models.ForeignKey(
@@ -39,7 +40,7 @@ class TourPoint(BaseModel):
         - Ensure axis_x and axis_y are within the specified range.
         - Ensure axis_x and axis_y are non-negative.
         """
-        if self.arrival_time < datetime.now().time() or self.leaving_time < datetime.now().time():
+        if self.arrival_time < datetime.now() or self.leaving_time < datetime.now():
             raise ValueError(
                 "Arrive Time or Leaving Time can't be in the past")
 
@@ -57,4 +58,4 @@ class TourPoint(BaseModel):
                         f"{field.name} Should NOT be Negative")
 
     def __str__(self):
-        return self.tour_object.title + " Point"
+        return self.title
