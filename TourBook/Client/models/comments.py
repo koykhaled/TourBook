@@ -9,7 +9,7 @@ class Comment(BaseModel):
     Represents a comment made by a client on a tour.
 
     Fields:
-        comments_field (TextField): The content of the comment.
+        comments (TextField): The content of the comment.
         client_object (ForeignKey): The associated client object for the comment.
         tour (ForeignKey): The associated tour for the comment.
 
@@ -17,8 +17,9 @@ class Comment(BaseModel):
         Base: The base model providing common fields and functionality.
 
     """
-    comments_field = models.TextField(max_length=255, default=' ')
-    client_object = models.ForeignKey(Client, on_delete=models.CASCADE)
+    comment = models.TextField(max_length=255, default='')
+    client_object = models.ForeignKey(
+        Client, on_delete=models.CASCADE, related_name='client_comments')
     tour = models.ForeignKey(
         Tour, on_delete=models.CASCADE, related_name="tour_comments")
 

@@ -7,25 +7,37 @@ User = get_user_model()
 
 
 class IsSuperAdmin(permissions.BasePermission):
+
     def has_permission(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
         if request.auth:
             return request.user.role == Role.SUPER_ADMIN
 
 
 class IsAdvertiser(permissions.BasePermission):
+
     def has_permission(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
         if request.auth:
             return request.user.role == Role.ADVERTISER
 
 
 class IsOrganizer(permissions.BasePermission):
+
     def has_permission(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
         if request.auth:
             return request.user.role == Role.ORGANIZER
 
 
 class IsClient(permissions.BasePermission):
+
     def has_permission(self, request, view):
+        if request.method in ('GET', 'HEAD', 'OPTIONS'):
+            return True
         if request.auth:
             return request.user.role == Role.CLIENT
 
