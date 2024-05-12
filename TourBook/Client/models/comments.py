@@ -19,7 +19,8 @@ class Comment(BaseModel):
     """
     comments_field = models.TextField(max_length=255, default=' ')
     client_object = models.ForeignKey(Client, on_delete=models.CASCADE)
-    tour = models.ForeignKey(Tour, on_delete=models.CASCADE)
+    tour = models.ForeignKey(
+        Tour, on_delete=models.CASCADE, related_name="tour_comments")
 
 
 # Sentiment Analaisys

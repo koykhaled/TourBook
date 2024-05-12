@@ -2,7 +2,7 @@ import re
 from rest_framework import serializers
 from ..models.tour_organizer import Situation, TourOrganizer
 from djoser.serializers import UserSerializer
-from django.core.files.storage import default_storage
+from Core.helpers import is_within
 
 
 class TourOrganizerSerializer(serializers.ModelSerializer):
@@ -12,6 +12,22 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         model = TourOrganizer
         fields = ('user', 'address', 'evaluation', 'logo', 'situation')
 
+    def get_char_fields(self):
+        char_fields = []
+        for field_name, field in self.fields.items():
+            if isinstance(field, serializers.CharField):
+                char_fields.append(field_name)
+
+        return char_fields
+
+    def get_numeric_fields(self):
+        numeric_fields = []
+        for field_name, field in self.fields.items():
+            if isinstance(field, serializers.IntegerField) or isinstance(field, serializers.DecimalField):
+                numeric_fields.append(field_name)
+
+        return numeric_fields
+
     def validate(self, attrs):
         """
         Performs validation on the serializer fields.
@@ -19,16 +35,23 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         Raises:
         - serializers.ValidationError: If any of the validation conditions fail.
         """
-
+        attrs = super().validate(attrs)
         errors = {}
-        if 'evaluation' in attrs and not is_within(0, 5, attrs['evaluation']):
-            errors['evaluation'] = "Evaluation Must be between 0 and 5"
 
-        if 'situation' in attrs and attrs['situation'] not in Situation.getSituationKeys():
-            errors['situation'] = f"Situation Must be one of {' ,'.join(Situation.getSituationKeys())}"
+        for field in self.get_char_fields():
+            if field in attrs:
+                if not bool(re.match(r'^[A-Za-z0-9\s\-.,]{4,}$', attrs[field])):
+                    errors[field] = f"Invalid {field}"
 
-        if 'address' in attrs and not re.match(r'^[A-Za-z0-9\s\-.,]{4,}$', attrs['address']):
-            errors['address'] = "Invalid Organizer Address"
+        for field in self.get_numeric_fields():
+            if field in attrs:
+                if attrs.get(field) is not None:
+                    if field == 'evaluation':
+                        if not is_within(0, 5, attrs['evaluation']):
+                            errors[field] = f"{field} Must be between -90 and 180"
+                    else:
+                        if attrs[field] < 0:
+                            errors[field] = f"{field} Should NOT be Negative"
 
         if 'logo' in attrs:
             allowed_types = ["image/jpeg", "image/png"]
@@ -63,7 +86,3 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         }
         representation.update(user_data)
         return representation
-
-
-def is_within(min_value, max_value, value):
-    return min_value <= value <= max_value

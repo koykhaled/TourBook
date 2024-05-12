@@ -56,6 +56,7 @@ class Tour(BaseModel):
 
     note = models.TextField(blank=True, null=True)
     posted = models.BooleanField(default=0)
+    posted_at = models.DateTimeField(blank=True, null=True)
     tour_organizer = models.ForeignKey(TourOrganizer, on_delete=models.CASCADE)
 
     @property
