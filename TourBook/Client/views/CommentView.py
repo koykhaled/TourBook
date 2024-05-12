@@ -22,7 +22,7 @@ class CommentView(viewsets.ModelViewSet):
             })
         except exceptions.ObjectDoesNotExist:
             return Response({
-                'errors': str(e)
+                'errors': "Tour Dosen't Exist!!"
             },
                 status=status.HTTP_404_NOT_FOUND
             )
