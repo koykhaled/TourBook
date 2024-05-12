@@ -2,6 +2,7 @@ from rest_framework import permissions
 from django.contrib.auth import get_user_model
 from .models.user import Role
 from Tour_Organizer.models.tour import Tour
+from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
 
 
@@ -38,5 +39,8 @@ class IsOrganizerOwnerOrReadOnly(permissions.BasePermission):
         if request.method in ('GET', 'HEAD', 'OPTIONS', 'POST'):
             return True
         else:
-            tour = Tour.objects.get(pk=view.kwargs['tour_id'])
-            return tour.tour_organizer == request.user.organizer
+            try:
+                tour = Tour.objects.get(pk=view.kwargs['tour_id'])
+                return tour.tour_organizer == request.user.organizer
+            except ObjectDoesNotExist:
+                return True

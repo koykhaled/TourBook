@@ -57,5 +57,13 @@ class TourPoint(BaseModel):
                     raise ValueError(
                         f"{field.name} Should NOT be Negative")
 
+    def save(self, *args, **kwargs):
+        self.arrival_time = datetime.strptime(
+            str(self.arrival_time), "%Y-%m-%d %H:%M:%S")
+
+        self.leaving_time = datetime.strptime(
+            str(self.leaving_time), "%Y-%m-%d %H:%M:%S")
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return self.title

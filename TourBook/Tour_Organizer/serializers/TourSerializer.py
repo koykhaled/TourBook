@@ -37,12 +37,14 @@ class TourSerializer(serializers.ModelSerializer):
             'end_date',
             'note',
             'posted',
+            'posted_at',
             'tour_organizer',
             'tour_attachments',
             'status',
             'tour_points'
         )
-        read_only_fields = ('total_cost', 'tour_organizer', 'comments_num')
+        read_only_fields = ('total_cost', 'tour_organizer',
+                            'comments_num', 'tour_points')
 
     def get_char_fields(self):
         char_fields = []
@@ -63,6 +65,16 @@ class TourSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         attrs = super().validate(attrs)
         errors = {}
+
+        if self.instance:
+            status = self.get_status(self.instance)
+
+            if status != 1:
+                errors['status'] = "Not All Points Accepted to Post Your Tour!!"
+
+            if self.instance.posted:
+                errors['post_tour'] = "This Tour has already been posted!"
+
         if 'start_date' in attrs or 'end_date' in attrs:
             date_errors = []
             if attrs['start_date'] < datetime.now() or attrs['end_date'] < datetime.now():
@@ -92,7 +104,6 @@ class TourSerializer(serializers.ModelSerializer):
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
-        print(self.get_char_fields())
         return attrs
 
     def to_internal_value(self, data):
@@ -142,5 +153,4 @@ class TourSerializer(serializers.ModelSerializer):
             attachment_serializer.is_valid(raise_exception=True)
             attachment_serializer.save(tour_object=instance)
 
-        instance = super().update(instance, validated_data)
-        return instance
+        return super().update(instance, validated_data)

@@ -5,10 +5,10 @@ from rest_framework.response import Response
 from Core.permissions import IsOrganizer, IsOrganizerOwnerOrReadOnly
 from ..serializers.TourSerializer import TourSerializer
 
-
 from ..models.tour import Tour
 
 from django.core import exceptions
+from datetime import datetime
 
 
 class TourView(viewsets.ModelViewSet):
@@ -91,6 +91,12 @@ class TourView(viewsets.ModelViewSet):
             },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour dose not exist!!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
 
         except Exception as e:
             return Response({
@@ -112,11 +118,11 @@ class TourView(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_201_CREATED
             )
-        except exceptions.ObjectDoesNotExist as e:
+        except exceptions.ObjectDoesNotExist:
             return Response({
-                'errors': str(e)
+                'errors': "Tour dose not exist!!"
             },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_404_NOT_FOUND
             )
 
         except (exceptions.ValidationError, TypeError) as e:
@@ -133,13 +139,15 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    def update(self, request, tour_id):
+    def update_tour(self, request, tour_id):
         try:
             tour = Tour.objects.get(pk=tour_id)
             serializer = self.serializer_class(
                 tour, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+            if not serializer.is_valid():
+                raise exceptions.ValidationError(serializer.errors)
+            else:
+                serializer.save()
             return Response(
                 {
                     'data': serializer.data,
@@ -147,25 +155,23 @@ class TourView(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_200_OK
             )
-        except exceptions.ObjectDoesNotExist as e:
+        except exceptions.ObjectDoesNotExist:
             return Response({
-                'errors': "Tour dose not exist!!"
+                'errors': "Tour does not exist!"
             },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_404_NOT_FOUND
             )
-
-        except (exceptions.ValidationError, TypeError) as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        except Exception:
+        except exceptions.ValidationError:
             return Response({
                 'errors': serializer.errors
             },
                 status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
     def delete(self, request, tour_id):
@@ -178,20 +184,55 @@ class TourView(viewsets.ModelViewSet):
                 },
                 status=status.HTTP_200_OK
             )
-        except exceptions.ObjectDoesNotExist as e:
+        except exceptions.ObjectDoesNotExist:
             return Response({
-                'errors': "Tour dose not exist!!"
+                'errors': "Tour does not exist!"
             },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                status=status.HTTP_404_NOT_FOUND
             )
-
-        except (exceptions.ValidationError, TypeError) as e:
+        except exceptions.ValidationError:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
             return Response({
                 'errors': str(e)
             },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+    def post_tour(self, request, tour_id):
+        try:
+            tour = Tour.objects.get(pk=tour_id)
+
+            serializer = self.serializer_class(
+                tour, data={'posted': True, 'posted_at': datetime.now()}, partial=True)
+
+            if not serializer.is_valid():
+                raise exceptions.ValidationError(serializer.errors)
+            else:
+                serializer.save()
+
+            return Response(
+                {
+                    'message': "Tour Posted Successfully"
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError as e:
+            return Response({
+                'errors': serializer.errors
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             return Response({
                 'errors': str(e)

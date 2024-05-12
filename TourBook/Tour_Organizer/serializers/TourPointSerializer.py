@@ -6,12 +6,12 @@ from Core.helpers import is_within
 
 
 class TourPointSerializer(serializers.ModelSerializer):
-    title = serializers.SerializerMethodField('get_title')
     status = serializers.SerializerMethodField('get_status')
 
     class Meta:
         model = TourPoint
         fields = (
+            'id',
             'title',
             'position',
             'description',
@@ -28,10 +28,6 @@ class TourPointSerializer(serializers.ModelSerializer):
                 "write_only": True
             }
         }
-
-    def get_title(self, tour_point):
-        title = tour_point.offer_request.offer_object.title
-        return title
 
     def get_status(self, tour_point):
         status = tour_point.offer_request.status
@@ -54,7 +50,6 @@ class TourPointSerializer(serializers.ModelSerializer):
         return numeric_fields
 
     def validate(self, attrs):
-        errors = {}
         """
         Validate the TourPoint attribute.
 
@@ -63,29 +58,38 @@ class TourPointSerializer(serializers.ModelSerializer):
         - Ensure axis_x and axis_y are within the specified range.
         - Ensure numeric values expect axis_x and axis_y are non-negative.
         """
-        if any(['arrival_time', 'leaving_time'] in attrs):
-            date_errors = []
-            if attrs['arrival_time'] < datetime.now() or attrs['leaving_time'] < datetime.now():
-                date_errors.append(
-                    "Arrive Time or Leaving Time can't be in the past")
+        errors = {}
+        attrs = super().validate(attrs)
+        date_fields = ['leaving_time', 'arrival_time']
+        date_errors = []
+        for field in date_fields:
+            if field in attrs:
+                if attrs[field] < datetime.now():
+                    date_errors.append(
+                        "Arrive Time or Leaving Time can't be in the past")
 
+        if 'leaving_time' in attrs and 'arrival_time' in attrs:
             if attrs['arrival_time'] >= attrs['leaving_time']:
                 date_errors.append(
                     "Leaving Time can't be before Arrive Time!!")
+        if len(date_errors) > 0:
+            errors['date'] = date_errors
 
-            for field in self.get_numeric_fields():
-                if attrs.get(field) is not None:
-                    if field in ['axis_x', 'axis_y']:
-                        if not is_within(-90, 180, attrs[field]):
-                            errors[field.name] = f"{field.name} Must be between -90 and 180"
-                    else:
-                        if attrs[field] < 0:
-                            errors[field.name] = f"{field.name} Should NOT be Negative"
-        if any(self.get_char_fields() in attrs):
-            for field in self.get_char_fields():
-                if not bool(re.match(r'^[A-z0-9\s]{4,}$', attrs[field])):
-                    errors[field.name] = f"Invalid {field.name}"
+        for field in self.get_numeric_fields():
+            if attrs.get(field) is not None:
+                if field in ['axis_x', 'axis_y']:
+                    if not is_within(-90, 180, attrs[field]):
+                        errors[field] = f"{field} Must be between -90 and 180"
+                else:
+                    if attrs[field] < 0:
+                        errors[field] = f"{field} Should NOT be Negative"
+
+        for field in self.get_char_fields():
+            if field in attrs:
+                print(attrs[field])
+                if not bool(re.match(r'^[A-Za-z0-9\s]{4,}$', attrs[field])):
+                    errors[field] = f"Invalid {field}"
 
         if len(errors) > 0:
-            serializers.ValidationError(errors)
+            raise serializers.ValidationError(errors)
         return attrs
