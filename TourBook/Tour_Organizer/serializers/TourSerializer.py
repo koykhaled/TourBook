@@ -4,12 +4,16 @@ from .TourAttachmentSerializer import TourAttachmentSerializer
 from .TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
 
+from decimal import Decimal
+
 from datetime import datetime
 import re
 from Core.helpers import is_within
 
 
 class TourSerializer(serializers.ModelSerializer):
+    total_cost = serializers.SerializerMethodField(
+        'get_total_cost', read_only=True)
     tour_attachments = TourAttachmentSerializer(many=True, required=False)
     tour_organizer = TourOrganizerSerializer(read_only=True)
     status = serializers.SerializerMethodField('get_status')
@@ -66,7 +70,7 @@ class TourSerializer(serializers.ModelSerializer):
         attrs = super().validate(attrs)
         errors = {}
 
-        if self.instance:
+        if self.instance and 'posted' in attrs:
             status = self.get_status(self.instance)
 
             if status != 1:
@@ -114,6 +118,32 @@ class TourSerializer(serializers.ModelSerializer):
         validated_data['tour_attachments'] = attachments_data
         return validated_data
 
+    def get_seat_num(self, tour):
+        tour_requests = tour.tour_requests.filter(situation="A")
+        reserverd_seats = 0
+        for tour_request in tour_requests:
+            reserverd_seats += tour_request.seat_num
+        return reserverd_seats
+
+    def get_total_cost(self, tour):
+        seats_cost = (self.get_seat_num(tour) +
+                      tour.seat_num) * tour.seat_cost
+        total_cost = Decimal(seats_cost) + Decimal(tour.extra_cost +
+                                                   tour.transportation_cost)
+        tour.total_cost = total_cost
+        tour.save()
+        return total_cost
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+        seat_num = represent.pop('seat_num')
+        seat_num = {
+            'reversed_seats': self.get_seat_num(instance),
+            'available_seats': instance.seat_num
+        }
+        represent.update(seat_num)
+        return represent
+
     def get_status(self, tour):
         is_accepted = 0
         if len(tour.tour_points.all()) > 0:
@@ -134,6 +164,7 @@ class TourSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         tour_attachments_data = validated_data.pop('tour_attachments', [])
+
         tour = Tour.objects.create(**validated_data)
 
         for attachment_data in tour_attachments_data:
@@ -153,4 +184,6 @@ class TourSerializer(serializers.ModelSerializer):
             attachment_serializer.is_valid(raise_exception=True)
             attachment_serializer.save(tour_object=instance)
 
-        return super().update(instance, validated_data)
+        instance = super().update(instance, validated_data)
+
+        return instance

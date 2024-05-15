@@ -108,7 +108,8 @@ class Tour(BaseModel):
         self.start_date = datetime.strptime(
             str(self.start_date), "%Y-%m-%d %H:%M:%S")
 
-        self.total_cost = self.calculate_total_cost
+        if self.pk is None:
+            self.total_cost = self.calculate_total_cost
         super().save(*args, **kwargs)
 
     def __str__(self):

@@ -3,6 +3,7 @@ from .views.OrganizerView import TourOrganizerView
 from .views.TourView import TourView
 from .views.TourPointView import TourPointView
 
+
 app_name = 'tour_organizer'
 
 organizer_patterns = [
@@ -34,6 +35,15 @@ tour_points_pattern = [
     ))
 ]
 
+tour_requests_pattern = [
+    path('', TourView.as_view(
+        {
+            'get': 'get_tour_requests',
+            'post': 'handel_request'
+        }
+    )),
+]
+
 tour_patterns = [
     path('', TourView.as_view({
         'get': 'get_organizer_tours',
@@ -48,7 +58,8 @@ tour_patterns = [
     path('other-organizers-tours/', TourView.as_view({
         'get': 'get_other_organizers_tours'
     })),
-    path('<int:tour_id>/tour-points/', include(tour_points_pattern))
+    path('<int:tour_id>/tour-points/', include(tour_points_pattern)),
+    path('<int:tour_id>/tour-requests/', include(tour_requests_pattern)),
 
 ]
 

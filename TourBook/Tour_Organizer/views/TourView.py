@@ -4,6 +4,12 @@ from rest_framework.response import Response
 
 from Core.permissions import IsOrganizer, IsOrganizerOwnerOrReadOnly
 from ..serializers.TourSerializer import TourSerializer
+from Client.serializers.ClientRequestserializer import ClientRequestSerializer
+from Client.models.client_request import ClientRequest
+from Client.models.client_request import SituationChoices
+
+from ..signals.handle_tour_request import handel_tour_request
+from django.db.models.signals import pre_save
 
 from ..models.tour import Tour
 
@@ -230,6 +236,79 @@ class TourView(viewsets.ModelViewSet):
         except exceptions.ValidationError as e:
             return Response({
                 'errors': serializer.errors
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def get_tour_requests(self, request, tour_id):
+        try:
+            tour = Tour.objects.prefetch_related(
+                'tour_requests').get(pk=tour_id)
+            tour_requests = tour.tour_requests.filter(
+                situation=SituationChoices.WAITING)
+            serializer = ClientRequestSerializer(tour_requests, many=True)
+            return Response(
+                {
+                    "data": serializer.data
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError:
+            return Response({
+                'errors': serializer.errors
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def handel_request(self, request, tour_id):
+        try:
+            tour = Tour.objects.prefetch_related(
+                'tour_requests').get(pk=tour_id)
+            tour_request = tour.tour_requests.get(pk=request.data['id'])
+            request_serializer = ClientRequestSerializer(
+                tour_request, data={"situation": request.data['situation']}, partial=True)
+            if not request_serializer.is_valid():
+                raise exceptions.ValidationError(request_serializer.errors)
+            request_serializer.save()
+            message = ""
+            if request_serializer.data['situation'] == SituationChoices.ACCEPTED:
+                message = "Your Request Accepted"
+            elif request_serializer.data['situation'] == SituationChoices.REJECTED:
+                message = "Your Request Regected"
+
+            return Response(
+                {
+                    "message": message
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError:
+            return Response({
+                'errors': request_serializer.errors
             },
                 status=status.HTTP_400_BAD_REQUEST
             )
