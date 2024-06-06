@@ -57,7 +57,8 @@ class Tour(BaseModel):
     note = models.TextField(blank=True, null=True)
     posted = models.BooleanField(default=0)
     posted_at = models.DateTimeField(blank=True, null=True)
-    tour_organizer = models.ForeignKey(TourOrganizer, on_delete=models.CASCADE)
+    tour_organizer = models.ForeignKey(
+        TourOrganizer, on_delete=models.CASCADE, related_name="organizer_tours")
 
     @property
     def calculate_total_cost(self):
@@ -108,7 +109,8 @@ class Tour(BaseModel):
         self.start_date = datetime.strptime(
             str(self.start_date), "%Y-%m-%d %H:%M:%S")
 
-        self.total_cost = self.calculate_total_cost
+        if self.pk is None:
+            self.total_cost = self.calculate_total_cost
         super().save(*args, **kwargs)
 
     def __str__(self):

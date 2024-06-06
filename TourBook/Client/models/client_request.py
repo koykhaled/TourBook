@@ -13,8 +13,9 @@ class SituationChoices(models.TextChoices):
         PAID: Paid
         WAITING: Waiting
     """
-    PAID = "P", "Paid"
-    WATING = "W", "Wating"
+    WAITING = "W", "Waiting"
+    ACCEPTED = "A", "Accepted"
+    REJECTED = "R", "Rejected"
     """
         Get a list of all possible values for the situation choices.
 
@@ -42,7 +43,7 @@ class ClientRequest(BaseModel):
     seat_num = models.IntegerField(default=0)
 
     situation = models.CharField(
-        max_length=25, choices=SituationChoices.choices, default=SituationChoices.WATING)
+        max_length=25, choices=SituationChoices.choices, default=SituationChoices.WAITING)
 
     client_object = models.ForeignKey(
         Client, on_delete=models.CASCADE, related_name="client_requests")

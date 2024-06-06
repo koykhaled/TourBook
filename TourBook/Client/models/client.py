@@ -67,7 +67,7 @@ class Client(BaseModel):
             ValueError: If the gender value is not one of the valid choices.
         """
         for field in self.get_char_fields():
-            if not re.match('^[A-z0-9\s]{4,}$', getattr(self, field.name)):
+            if not re.match(r'^[A-z0-9\s]{4,}$', getattr(self, field.name)):
                 raise ValueError(f"{field.name} is Invalid")
 
         for field in self.get_numeric_fields():

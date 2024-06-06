@@ -5,4 +5,4 @@ from .models.comments import Comment
 # Register your models here.
 admin.site.register(Client)
 admin.site.register(ClientRequest)
-# admin.site.register(Comment)
+admin.site.register(Comment)
