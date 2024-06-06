@@ -1,6 +1,9 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
+from django.db.models.functions import ExtractMonth
+from django.db.models import Count
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 
 from ..serializers.TourOrganizerSerializer import TourOrganizerSerializer
@@ -11,7 +14,9 @@ from Core.permissions import IsOrganizer
 
 from ..models.tour_organizer import TourOrganizer
 
-# Create your views here.
+from django.core import exceptions
+
+from collections import defaultdict
 
 
 class TourOrganizerView(UserViewSet):
@@ -110,3 +115,114 @@ class TourOrganizerView(UserViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    def get_organizer_statistics(self, request):
+        try:
+            organizer = request.user.organizer
+
+            tours_per_month = organizer.organizer_tours.annotate(
+                month=ExtractMonth('created_at')).values('month').annotate(count=Count('id'))
+
+            profits_per_month = self.get_organizer_tour_profits_per_month(
+                organizer)
+
+            organizer_tour = organizer.organizer_tours.filter(
+                posted=1, pk=request.data['tour_id']).get()
+
+            comments = organizer_tour.tour_comments.all()
+
+            if len(comments) > 0:
+                sentiment_scores = get_sentiment_scores(comments)
+                organizer_tour_rating = convert_to_percentage_value(
+                    sentiment_scores)
+            else:
+                organizer_tour_rating = 0
+
+            data = {
+                'tours_per_month': tours_per_month,
+                "organizer_tour_rating": organizer_tour_rating,
+                'profits_per_month': profits_per_month
+            }
+
+            return Response({"data": data}, status=status.HTTP_200_OK)
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def get_organizer_tour_profits_per_month(self, tour_organizer):
+        """
+        Calculates the profits for an organizer's tours per month.
+
+        Args:
+            tour_organizer (TourOrganizer): The tour organizer object.
+
+        Returns:
+            dict: A dictionary where the keys are the month-year strings and the values are the profits for that month.
+        """
+        profits_per_month = defaultdict(int)
+
+        tours = tour_organizer.organizer_tours.filter(posted=1)
+        tour_profits = 0
+
+        for tour in tours:
+            month_name = tour.start_date.strftime('%B')
+            tour_profits = tour.seat_num * tour.seat_cost
+            profits_per_month[month_name] += tour_profits
+
+        return profits_per_month
+
+
+def get_sentiment_scores(comments):
+    """
+    Calculates sentiment scores for a list of comments using the SentimentIntensityAnalyzer.
+
+    Args:
+        comments (list): A list of Comment objects or strings representing comments.
+
+    Returns:
+        list: A list of compound sentiment scores for each comment.
+    """
+    analyzer = SentimentIntensityAnalyzer()
+    scores = []
+    for comment in comments:
+        sentiment_scores = analyzer.polarity_scores(comment.comment)
+        compound_score = sentiment_scores['compound']
+        scores.append(compound_score)
+    return scores
+
+
+def convert_to_percentage_value(values):
+    """
+    Converts a list of values from the range [-1, 1] to the range [0, 5].
+    the range in we have in [-1,1] so we add 1 to make it in [0 ,2] then we multipal it with 2.5
+    to make it [0,5] to apply 5 star system
+    then we converte the last result to percentage value
+
+    Args:
+        values (list): A list of numeric values representing ratings within the range [-1, 1].
+
+    Returns:
+        float: The average rating in percentage.
+    """
+    total = 0
+    for value in values:
+        rating = round((value + 1) * 2.5, 1)
+        total += rating
+    average_rating = round(total / len(values), 1)
+    average_rating = average_rating * 100 / 5
+    return average_rating

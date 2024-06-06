@@ -15,6 +15,14 @@ organizer_patterns = [
             }
         ),
         name='organizers'
+    ),
+    path(
+        'statistics', TourOrganizerView.as_view(
+            {
+                'get': 'get_organizer_statistics',
+            }
+        ),
+        name='organizers-statistics'
     )
 ]
 
