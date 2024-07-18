@@ -1,15 +1,13 @@
 from rest_framework.response import Response
-from rest_framework import status , generics
+from rest_framework import status, generics
 from django.core.exceptions import ValidationError
 
 from Core.models.user import UserAccount
 from Advertiser.models.offers import Offer
 from .serializers.OfferSerializer import ActiveOffersSerializer
 
-from .serializers.AdvertiserSerializers import AdvertiserSerializers , OfferSerializer
-from accounts.serializers import User, UserSerializer
+from .serializers.AdvertiserSerializers import AdvertiserSerializers, OfferSerializer
 from django.db.models import Q
-from Core.permissions import IsOrganizer
 from datetime import datetime, timedelta
 from .models.advertiser import Advertiser
 from rest_framework.views import APIView
@@ -17,11 +15,10 @@ from rest_framework.response import Response
 # Create your views here.
 
 
-
 class AdvertiserView(APIView):
     serializer_class = AdvertiserSerializers
 
-    def get(self, request):        
+    def get(self, request):
         try:
             advertisers = Advertiser.objects.all()
             serializer = self.serializer_class(advertisers, many=True)
@@ -31,7 +28,6 @@ class AdvertiserView(APIView):
             return Response({"detail": "Advertiser not found."}, status=status.HTTP_404_NOT_FOUND)
 
 
-
 class SingleAdvertiserAPIView(APIView):
     serializer_class = AdvertiserSerializers
     queryset = Advertiser.objects.all()
@@ -39,15 +35,18 @@ class SingleAdvertiserAPIView(APIView):
 
     def get(self, request, user):
         try:
-            advertiser = Advertiser.objects.select_related('user').prefetch_related('offers').get(user=user)
+            advertiser = Advertiser.objects.select_related(
+                'user').prefetch_related('offers').get(user=user)
             serializer = AdvertiserSerializers(advertiser)
             return Response(serializer.data)
         except Advertiser.DoesNotExist:
             return Response({'error': 'Advertiser not found'}, status=404)
 
+
 class OfferListAPIView(generics.ListAPIView):
     queryset = Offer.objects.all()
     serializer_class = OfferSerializer
+
 
 class ActiveOffersAPIView(APIView):
     def get(self, request):

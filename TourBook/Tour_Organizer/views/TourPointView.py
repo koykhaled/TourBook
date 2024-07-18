@@ -1,6 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
-from Core.permissions import IsOrganizer, IsOrganizerOwnerOrReadOnly
+from Core.permissions import IsTourOwnerOrReadOnly
 from ..serializers.TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
 from ..models.tour_point import TourPoint
@@ -9,7 +9,7 @@ from django.core import exceptions
 
 class TourPointView(viewsets.ModelViewSet):
     serializer_class = TourPointSerializer
-    permission_classes = [IsOrganizer, IsOrganizerOwnerOrReadOnly]
+    permission_classes = [IsTourOwnerOrReadOnly]
 
     def get_tour_points(self, request, tour_id):
         try:
@@ -59,7 +59,7 @@ class TourPointView(viewsets.ModelViewSet):
             )
         except exceptions.ObjectDoesNotExist as e:
             return Response({
-                'errors': "Tour dose not exist!!"
+                'errors': str(e)
             },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )

@@ -6,4 +6,7 @@ class TourOrganizerConfig(AppConfig):
     name = 'Tour_Organizer'
 
     def ready(self):
-        import Tour_Organizer.signals
+        try:
+            import Tour_Organizer.signals
+        except ImportError:
+            pass

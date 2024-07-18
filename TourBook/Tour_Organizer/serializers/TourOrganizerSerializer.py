@@ -1,16 +1,18 @@
 import re
 from rest_framework import serializers
-from ..models.tour_organizer import Situation, TourOrganizer
-from djoser.serializers import UserSerializer
-from Core.helpers import is_within
+from ..models.tour_organizer import TourOrganizer
+from accounts.serializers import UserSerializer
+from Core.helpers.helpers import is_within
 
 
 class TourOrganizerSerializer(serializers.ModelSerializer):
     user = UserSerializer()
+    status = serializers.SerializerMethodField('get_status', read_only=True)
 
     class Meta:
         model = TourOrganizer
-        fields = ('user', 'address', 'evaluation', 'logo', 'situation')
+        fields = ('id', 'user', 'address', 'evaluation',
+                  'logo', 'situation', 'status')
 
     def get_char_fields(self):
         char_fields = []
@@ -74,15 +76,28 @@ class TourOrganizerSerializer(serializers.ModelSerializer):
         user_serializer = UserSerializer(user)
         return user_serializer.data
 
+    def get_status(self, instance):
+        status = 0
+        if (
+            all(bool(value) != False for _, value in instance.__dict__.items()) and
+
+            all(
+                bool(getattr(instance.user, value)) != False for value in self.get_user(instance)
+            )
+        ):
+            status = 1
+        return status
+
     def to_representation(self, instance):
         representation = super().to_representation(instance)
 
         user_data = representation.pop('user')
         user_data = {
-            'id': user_data['id'],
+            'user_id': user_data['id'],
             'username': user_data['username'],
             'phone': user_data['phone'],
-            'email': user_data['email']
+            'email': user_data['email'],
+            'avatar': user_data['avatar'],
         }
         representation.update(user_data)
         return representation

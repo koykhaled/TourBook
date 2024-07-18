@@ -1,11 +1,48 @@
 from django.db import models
 from Core.models.base import BaseModel
+
+from django.contrib.auth import get_user_model
+
 from .tour_organizer import TourOrganizer
 from datetime import datetime
+
+from django.core import exceptions
 
 from decimal import Decimal
 
 import re
+User = get_user_model()
+
+
+class ReactionState(models.IntegerChoices):
+    LIKE = 1, "Like"
+    DISLIKE = 0, "Dislike"
+
+    def get_ReactionState():
+        keys = [key for key, _ in ReactionState.choices]
+        return keys
+
+
+class Reaction(BaseModel):
+    reaction = models.IntegerField(
+        choices=ReactionState.choices, blank=True)
+    user = models.ForeignKey(
+        User, related_name='user_likes', on_delete=models.CASCADE)
+
+    def clean(self):
+        if self.reaction not in ReactionState.get_ReactionState():
+            raise exceptions.ValidationError("Your Reaction Not Supported!!")
+        return super().clean()
+
+    def __str__(self):
+        reaction = ""
+        match(self.reaction):
+            case 0:
+                reaction = "Dislike"
+            case 1:
+                reaction = "Like"
+
+        return reaction
 
 
 class Tour(BaseModel):
@@ -16,8 +53,7 @@ class Tour(BaseModel):
     - title (CharField): The title of the tour.
     - description (TextField): The description of the tour.
     - starting_place (CharField): The starting place of the tour.
-    - like_counter (IntegerField): The number of likes for the tour.
-    - dislike_counter (IntegerField): The number of dislikes for the tour.
+    - reaction (IntegerField): The number of likes for the tour.
     - seat_num (IntegerField): The number of available seats for the tour.
     - seat_cost (DecimalField): The cost of each seat for the tour.
     - transportation_cost (DecimalField): The cost of transportation for the tour.
@@ -36,8 +72,8 @@ class Tour(BaseModel):
 
     starting_place = models.CharField(max_length=100)
 
-    like_counter = models.IntegerField(default=0)
-    dislike_counter = models.IntegerField(default=0)
+    reaction = models.ManyToManyField(
+        Reaction, related_name='tour_like', blank=True)
 
     seat_num = models.IntegerField(default=0)
     seat_cost = models.DecimalField(

@@ -1,7 +1,7 @@
 from .models import Tour
 from django.contrib import admin
 from .models.tour_organizer import TourOrganizer
-from .models.tour import Tour
+from .models.tour import Tour, Reaction
 from .models.tour_point import TourPoint
 from .models.tour_attachment import TourAttachment
 # Register your models here.
@@ -29,3 +29,4 @@ admin.site.register(TourOrganizer, TourOrganizerAdmin)
 admin.site.register(Tour, TourAdmin)
 admin.site.register(TourPoint, TourPointAdmin)
 admin.site.register(TourAttachment)
+admin.site.register(Reaction)

@@ -55,7 +55,7 @@ def get_advertisers(instance):
     return [
         advertiser.user
         for advertiser in Advertiser.objects.filter(
-            offers__offer_requests__offer_point_request__tour_object=instance
+            offers__offer_requests__offer_point__tour_object=instance
         ).select_related('user').distinct()
     ]
 
