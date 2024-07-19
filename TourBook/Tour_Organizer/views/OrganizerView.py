@@ -1,10 +1,9 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
-from django.db.models.functions import ExtractMonth
-from django.db.models import Count
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+from rest_framework.viewsets import ModelViewSet
 
 from Advertiser.models.offers import OfferRequest
 from ..serializers.TourOrganizerSerializer import TourOrganizerSerializer
@@ -19,13 +18,61 @@ from django.core import exceptions
 
 from collections import defaultdict
 
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List of All Organizers who participate in Advertiser Offers", tags=["Organizer Data"]),
+    retrieve=extend_schema(
+        summary="Retrieve Organizer Profile", tags=["Organizer Data"]),
+    update=extend_schema(summary="Update a tour", tags=["Tour"]),
+)
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer
     organizer_serializer_class = TourOrganizerSerializer
     permission_classes = [IsOrganizerOwnerProfile]
 
-    def get_organizer(self, request, id):
+    def list(self, request):
+        # get organziers who subscripe in advertisers offers
+        try:
+            advertiser = request.user.advertiser
+            offers = advertiser.offers.all()
+            offer_requests = OfferRequest.objects.filter(
+                offer_object__in=offers, status='A'
+            ).select_related('offer_point', 'offer_point__tour_object', 'offer_point__tour_object__tour_organizer')
+
+            organizers = set()
+            for offer_request in offer_requests:
+                organizers.add(
+                    offer_request.offer_point.tour_object.tour_organizer)
+
+            serializer = self.organizer_serializer_class(
+                list(organizers), many=True)
+            return Response(
+                {'data': serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def retrieve(self, request, id):
         """
         Retrieve the organizer data by id.
 
@@ -57,7 +104,7 @@ class TourOrganizerView(UserViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def update_organizer(self, request, id):
+    def update(self, request, id):
         """
         Update the organizer data by id.
 
@@ -135,7 +182,15 @@ class TourOrganizerView(UserViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def get_organizer_statistics(self, request):
+
+@extend_schema_view(
+
+    list=extend_schema(summary="Get All Organizer Statstics",
+                       tags=["Organizer Statistics"]),
+
+)
+class OrganizerStatistics(ModelViewSet):
+    def list(self, request):
         # don't forget to apply SRP
         try:
 
@@ -221,45 +276,6 @@ class TourOrganizerView(UserViewSet):
             profits_per_month[month_name] += tour_profits
 
         return profits_per_month
-
-    def get_organizers(self, request):
-        # get organziers who subscripe in advertisers offers
-        try:
-            advertiser = request.user.advertiser
-            offers = advertiser.offers.all()
-            offer_requests = OfferRequest.objects.filter(
-                offer_object__in=offers, status='A'
-            ).select_related('offer_point', 'offer_point__tour_object', 'offer_point__tour_object__tour_organizer')
-
-            organizers = set()
-            for offer_request in offer_requests:
-                organizers.add(
-                    offer_request.offer_point.tour_object.tour_organizer)
-
-            serializer = self.organizer_serializer_class(
-                list(organizers), many=True)
-            return Response(
-                {'data': serializer.data},
-                status=status.HTTP_200_OK
-            )
-        except exceptions.ObjectDoesNotExist as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except exceptions.ValidationError as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        except Exception as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
 
 
 def get_sentiment_scores(comments):

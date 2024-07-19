@@ -1,5 +1,5 @@
 from django.urls import path, include
-from .views.OrganizerView import TourOrganizerView
+from .views.OrganizerView import TourOrganizerView, OrganizerStatistics
 from .views.TourView import TourView, UnauthToursView, OrganizerTours, OtherOrganizersTours, TourRequests, TourPosted
 
 from .views.TourPointView import TourPointView
@@ -11,23 +11,23 @@ organizer_patterns = [
     path(
         '<int:id>', TourOrganizerView.as_view(
             {
-                'get': 'get_organizer',
-                'patch': 'update_organizer',
+                'get': 'retrieve',
+                'patch': 'update',
             }
         ),
         name='organizers'
     ),
     path(
-        'statistics', TourOrganizerView.as_view(
+        'statistics', OrganizerStatistics.as_view(
             {
-                'get': 'get_organizer_statistics',
+                'get': 'list',
             }
         ),
         name='organizers-statistics'
     ),
     path('get-organizers', TourOrganizerView.as_view(
         {
-            'get': 'get_organizers'
+            'get': 'list'
         }
     ))
 ]
@@ -35,15 +35,14 @@ organizer_patterns = [
 tour_points_pattern = [
     path('', TourPointView.as_view(
         {
-            'get': 'get_tour_points',
+            'get': 'list',
 
         }
     )),
     path('<int:tour_point_id>', TourPointView.as_view(
         {
-            # 'get': 'get_tour_point',
             'patch': 'update',
-            'delete': 'delete',
+            'delete': 'destroy',
 
         }
     ))

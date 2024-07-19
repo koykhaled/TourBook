@@ -3,15 +3,21 @@ from rest_framework.response import Response
 from Core.permissions import IsTourOwnerOrReadOnly
 from ..serializers.TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
-from ..models.tour_point import TourPoint
 from django.core import exceptions
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 
+@extend_schema_view(
+
+    list=extend_schema(summary="List all tour points", tags=["Tour Points"]),
+    update=extend_schema(summary="Update a tour point", tags=["Tour Points"]),
+    destroy=extend_schema(summary="Delete a tour point", tags=["Tour Points"]),
+)
 class TourPointView(viewsets.ModelViewSet):
     serializer_class = TourPointSerializer
     permission_classes = [IsTourOwnerOrReadOnly]
 
-    def get_tour_points(self, request, tour_id):
+    def list(self, request, tour_id):
         try:
             tour = Tour.objects.prefetch_related('tour_points').get(pk=tour_id)
             tour_points = tour.tour_points.all()
@@ -78,7 +84,7 @@ class TourPointView(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    def delete(self, request, tour_id, tour_point_id):
+    def destroy(self, request, tour_id, tour_point_id):
         try:
             tour = Tour.objects.prefetch_related('tour_points').get(pk=tour_id)
             tour_point = tour.tour_points.get(pk=tour_point_id)
