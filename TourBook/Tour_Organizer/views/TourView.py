@@ -6,7 +6,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework.permissions import AllowAny
 
 
-from Core.permissions import IsTourOwnerOrReadOnly
+from Core.permissions.OrganizerPermissions import IsTourOwnerOrReadOnly
 from ..serializers.TourSerializer import TourSerializer
 from Client.serializers.ClientRequestserializer import ClientRequestSerializer
 from Client.models.client_request import SituationChoices

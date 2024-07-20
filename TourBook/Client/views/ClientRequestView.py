@@ -1,17 +1,23 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from ..serializers.ClientRequestserializer import ClientRequestSerializer
-from Core.permissions import IsClient
+from Core.permissions.ClientPermissions import IsClientOwnerProfile
 from Tour_Organizer.models.tour import Tour
 from ..models.client import Client
 from django.core import exceptions
-from django.db import IntegrityError
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 
+@extend_schema_view(
+    create_request=extend_schema(
+        summary="create a request for the tour", tags=['Client Request']),
+)
 class ClientRequestView(viewsets.ModelViewSet):
     serializer_class = ClientRequestSerializer
-    permission_classes = [IsClient]
+    permission_classes = [IsClientOwnerProfile]
 
+    @action(detail=False)
     def create_request(self, request, tour_id):
         try:
             client = Client.objects.get(user=request.user)

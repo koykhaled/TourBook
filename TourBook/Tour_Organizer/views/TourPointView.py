@@ -1,6 +1,6 @@
 from rest_framework import status, viewsets
 from rest_framework.response import Response
-from Core.permissions import IsTourOwnerOrReadOnly
+from Core.permissions.OrganizerPermissions import IsTourOwnerOrReadOnly
 from ..serializers.TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
 from django.core import exceptions

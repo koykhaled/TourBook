@@ -9,13 +9,16 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ('id', 'comment', 'client_object', 'tour')
-        read_only_fields = ('id', 'tour',)
+        extra_kwargs = {
+            "tour": {'write_only': True},
+            "client_object": {'read_only': True}
+        }
 
     def validate(self, attrs):
         attrs = super().validate(attrs)
         errors = {}
-        comments_field = attrs.get('comment')
-        if not comments_field or comments_field.strip() == '':
+        comment = attrs.get('comment')
+        if comment and comment.strip() == '':
             errors['comments'] = "Comment  cannot be empty."
         if len(errors) > 0:
             raise serializers.ValidationError(errors)

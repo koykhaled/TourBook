@@ -10,7 +10,7 @@ from ..serializers.TourOrganizerSerializer import TourOrganizerSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
-from Core.permissions import IsOrganizerOwnerProfile
+from Core.permissions.OrganizerPermissions import IsOrganizerOwnerProfile
 
 from ..models.tour_organizer import TourOrganizer
 
