@@ -43,7 +43,7 @@ class IsRequestOwnerOrReadOnly(permissions.BasePermission):
                         return True
                     try:
                         client_request = ClientRequest.objects.get(
-                            pk=view.kwargs['id'])
+                            pk=view.kwargs['request_id'])
                         return client_request.client_object == request.user.client
                     except ObjectDoesNotExist:
                         return True

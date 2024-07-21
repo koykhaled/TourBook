@@ -14,13 +14,28 @@ client_patterns = [
     ))
 ]
 
-client_requests_pattern = [
-    path('create', ClientRequestView.as_view(
+requests_pattern = [
+    path('', ClientRequestView.as_view(
         {
-            'post': 'create_request'
+            'get': 'get_client_requests',
+            'post': 'create_request',
         }
-    ))
+    )),
+    path('<int:request_id>/', ClientRequestView.as_view(
+        {
+            'delete': 'delete_request',
+        }
+    )),
 ]
+
+client_requests_pattern = [
+    path('', ClientRequestView.as_view(
+        {
+            'get': 'get_client_requests',
+        }
+    )),
+]
+
 comments_pattern = [
     path('', CommentView.as_view(
         {
@@ -40,5 +55,6 @@ comments_pattern = [
 urlpatterns = [
     path('clients/', include(client_patterns)),
     path('<int:tour_id>/comments/', include(comments_pattern)),
-    path('<int:tour_id>/tour-requests/', include(client_requests_pattern))
+    path('<int:tour_id>/requests/', include(requests_pattern)),
+    path('client-requests/', include(client_requests_pattern)),
 ]
