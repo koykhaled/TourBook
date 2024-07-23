@@ -13,7 +13,7 @@ import cloudinary
 from datetime import timedelta
 from pathlib import Path
 import os
-import dj_database_url
+# import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -106,7 +106,7 @@ DATABASES = {
         'PORT': 5432,
     }
 }
-DATABASES["default"] = dj_database_url.parse("postgresql://tourbook_user:LUBC8T3n7mv07XqJQibAcAi6YFZ2hGDy@dpg-cqd3uieehbks73bp1p20-a.singapore-postgres.render.com/tourbook")
+
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
