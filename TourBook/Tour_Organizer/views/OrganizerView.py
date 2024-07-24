@@ -26,7 +26,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
         summary="List of All Organizers who participate in Advertiser Offers", tags=["Organizer Data"]),
     retrieve=extend_schema(
         summary="Retrieve Organizer Profile", tags=["Organizer Data"]),
-    update=extend_schema(summary="Update a tour", tags=["Tour"]),
+    update=extend_schema(summary="Update Organizer Data",
+                         tags=["Organizer Data"]),
 )
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer

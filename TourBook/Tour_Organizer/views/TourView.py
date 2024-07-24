@@ -26,8 +26,6 @@ from datetime import datetime
     retrieve=extend_schema(summary="Retrieve a tour", tags=["Tour"]),
     update=extend_schema(summary="Update a tour", tags=["Tour"]),
     destroy=extend_schema(summary="Delete a tour", tags=["Tour"]),
-    get_organizer_tours=extend_schema(
-        summary="Retrieve tours by organizer", tags=["Tour"]),
 )
 class TourView(viewsets.ModelViewSet):
     pagination_class = PageNumberPagination

@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 
 
 from ..serializers.ClientSerializer import ClientSerializer
+from Tour_Organizer.serializers.TourSerializer import TourSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
@@ -23,12 +24,41 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
     retrieve=extend_schema(
         summary="Retrieve Client Profile", tags=['Client Profile']),
     update_client=extend_schema(
-        summary="Update Client Profile", tags=['Client']),
+        summary="Update Client Profile", tags=['Client Profile']),
+    get_client_tours=extend_schema(
+        summary="Get Client Tours", tags=['Client Tours']),
 )
 class ClientView(UserViewSet):
     serializer_class = UserSerializer
+    tour_serializer_class = TourSerializer
     client_serializer_class = ClientSerializer
     permission_classes = [IsClientOwnerProfile]
+
+    @action(detail=False)
+    def get_client_tours(self, request):
+
+        try:
+            client = request.user.client
+            client_requests = client.client_requests.filter(situation='A')
+            tours = [
+                client_request.tour_object
+                for client_request in client_requests
+            ]
+            serializer = self.tour_serializer_class(tours, many=True)
+
+            return Response({
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            return Response({
+                'errors': "Invalid data"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def retrieve(self, request, client_id):
         """

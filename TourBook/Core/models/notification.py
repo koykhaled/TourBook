@@ -12,6 +12,7 @@ class Notification (BaseModel):
         user_id (UserAccount): The user associated with the notification.
     """
     content = models.CharField(max_length=150)
+    is_read = models.BooleanField(default=False)
     user = models.ForeignKey(
         UserAccount,
         on_delete=models.CASCADE
