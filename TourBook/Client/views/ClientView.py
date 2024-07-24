@@ -1,25 +1,66 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
+from rest_framework.decorators import action
 
 
 from ..serializers.ClientSerializer import ClientSerializer
+from Tour_Organizer.serializers.TourSerializer import TourSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
-from Core.permissions import IsClient
+from Core.permissions.ClientPermissions import IsClientOwnerProfile
 
 from ..models.client import Client
+
+from django.core import exceptions
+
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
 # Create your views here.
 
 
+@extend_schema_view(
+    retrieve=extend_schema(
+        summary="Retrieve Client Profile", tags=['Client Profile']),
+    update_client=extend_schema(
+        summary="Update Client Profile", tags=['Client Profile']),
+    get_client_tours=extend_schema(
+        summary="Get Client Tours", tags=['Client Tours']),
+)
 class ClientView(UserViewSet):
     serializer_class = UserSerializer
+    tour_serializer_class = TourSerializer
     client_serializer_class = ClientSerializer
-    permission_classes = [IsClient]
+    permission_classes = [IsClientOwnerProfile]
 
-    def get_client(self, request):
+    @action(detail=False)
+    def get_client_tours(self, request):
+
+        try:
+            client = request.user.client
+            client_requests = client.client_requests.filter(situation='A')
+            tours = [
+                client_request.tour_object
+                for client_request in client_requests
+            ]
+            serializer = self.tour_serializer_class(tours, many=True)
+
+            return Response({
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
+
+        except ValidationError as e:
+            return Response({
+                'errors': "Invalid data"
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    def retrieve(self, request, client_id):
         """
         Retrieve the client data for the authenticated user.
 
@@ -29,21 +70,31 @@ class ClientView(UserViewSet):
         Returns:
             Response: Serialized data of the client and status indicating the data_status.
         """
-        user = request.user
-        data_status = 0
-        client = Client.objects.get(user=user)
-        serializer = self.client_serializer_class(client)
-        if all(value is not None for value in serializer.data.values()):
-            data_status = 1
+        try:
+            client = Client.objects.get(pk=client_id)
+            serializer = self.client_serializer_class(client)
 
-        return Response({
-            "data": serializer.data,
-            "status": data_status
-        }, status=status.HTTP_200_OK)
+            return Response({
+                "data": serializer.data,
+            }, status=status.HTTP_200_OK)
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Client does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
-    def update_client(self, request):
+    @action(detail=False)
+    def update_client(self, request, client_id):
         """
-        Update the client data for the authenticated user.
+        Update the client data .
 
         This method allows updating the user and client data associated with the authenticated user.
         It performs partial updates on the user and client instances based on the provided request data.
@@ -58,8 +109,9 @@ class ClientView(UserViewSet):
             Response: Serialized data of the updated client or error response if validation or update fails.
         """
         try:
-            user = request.user
-            client = user.client
+
+            client = Client.objects.prefetch_related('user').get(pk=client_id)
+            user = client.user
             user_serializer = self.serializer_class(user)
             client_serializer = self.client_serializer_class(client)
             errors = []
@@ -76,14 +128,6 @@ class ClientView(UserViewSet):
                 client_serializer = self.client_serializer_class(
                     client, data=request.data['client'], partial=True)
                 if not client_serializer.is_valid(raise_exception=False):
-                    errors.append(client_serializer.errors)
-                else:
-                    client_serializer.save()
-
-            if 'logo' in request.data:
-                client_serializer = self.client_serializer_class(
-                    client, data=request.data, partial=True)
-                if not client_serializer.is_valid():
                     errors.append(client_serializer.errors)
                 else:
                     client_serializer.save()

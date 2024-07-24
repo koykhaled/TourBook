@@ -1,12 +1,16 @@
 from datetime import datetime
 from rest_framework import serializers
 from Tour_Organizer.models.tour_point import TourPoint
+from Tour_Organizer.models.tour import Tour
+from Advertiser.models.offers import Offer
+from Advertiser.serializers.OfferRequestSerializer import OfferRequestSerializer
 import re
-from Core.helpers import is_within
+from Core.helpers.helpers import is_within
 
 
 class TourPointSerializer(serializers.ModelSerializer):
     status = serializers.SerializerMethodField('get_status')
+    offer_request = OfferRequestSerializer()
 
     class Meta:
         model = TourPoint
@@ -19,7 +23,6 @@ class TourPointSerializer(serializers.ModelSerializer):
             'leaving_time',
             'axis_x',
             'axis_y',
-            'tour_object',
             'offer_request',
             'status'
         )
@@ -86,10 +89,22 @@ class TourPointSerializer(serializers.ModelSerializer):
 
         for field in self.get_char_fields():
             if field in attrs:
-                print(attrs[field])
                 if not bool(re.match(r'^[A-Za-z0-9\s]{4,}$', attrs[field])):
                     errors[field] = f"Invalid {field}"
 
         if len(errors) > 0:
             raise serializers.ValidationError(errors)
         return attrs
+
+    def create(self, validated_data):
+        offer_request_data = validated_data.pop('offer_request')
+        offer = Offer.objects.get(pk=offer_request_data['offer_object'])
+        offer_request_data['offer_object'] = offer
+        offer_request_serializer = OfferRequestSerializer(
+            data=offer_request_data)
+        offer_request_serializer.is_valid(raise_exception=True)
+        offer_request = offer_request_serializer.save(offer_object=offer)
+
+        tour_point = TourPoint.objects.create(
+            offer_request=offer_request, **validated_data)
+        return tour_point

@@ -2,7 +2,7 @@
 from django.db import models
 from django.conf import settings
 from Core.models.base import BaseModel
-from Core.helpers import upload_to
+from Core.helpers.helpers import upload_to
 
 import re
 # Create your models here.

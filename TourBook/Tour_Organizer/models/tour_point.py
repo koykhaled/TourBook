@@ -29,7 +29,7 @@ class TourPoint(BaseModel):
     tour_object = models.ForeignKey(
         Tour, on_delete=models.CASCADE, related_name="tour_points")
     offer_request = models.OneToOneField(
-        OfferRequest, on_delete=models.CASCADE, related_name="offer_point_request")
+        OfferRequest, on_delete=models.CASCADE, related_name="offer_point")
 
     def clean(self):
         """

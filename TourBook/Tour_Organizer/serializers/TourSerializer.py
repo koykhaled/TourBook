@@ -3,12 +3,15 @@ from .TourOrganizerSerializer import TourOrganizerSerializer
 from .TourAttachmentSerializer import TourAttachmentSerializer
 from .TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
+from ..models.tour_point import TourPoint
+
+from Advertiser.models.offers import OfferRequest, Offer
 
 from decimal import Decimal
 
 from datetime import datetime
 import re
-from Core.helpers import is_within
+from Core.helpers.helpers import is_within
 
 
 class TourSerializer(serializers.ModelSerializer):
@@ -18,7 +21,7 @@ class TourSerializer(serializers.ModelSerializer):
     tour_organizer = TourOrganizerSerializer(read_only=True)
     status = serializers.SerializerMethodField('get_status')
     comments_num = serializers.SerializerMethodField('get_comments_num')
-    tour_points = serializers.SerializerMethodField()
+    tour_points = TourPointSerializer(many=True)
 
     class Meta:
         model = Tour
@@ -27,8 +30,7 @@ class TourSerializer(serializers.ModelSerializer):
             'title',
             'description',
             'starting_place',
-            'like_counter',
-            'dislike_counter',
+            'reaction',
             'comments_num',
             'seat_num',
             'seat_cost',
@@ -92,7 +94,6 @@ class TourSerializer(serializers.ModelSerializer):
                 errors['date'] = date_errors
         for field in self.get_char_fields():
             if field in attrs:
-                print(attrs.get(field))
                 if not bool(re.match(r'^[A-Za-z0-9\s]{4,}$', attrs.get(field))):
                     errors[field] = f"Invalid {field}"
 
@@ -134,14 +135,59 @@ class TourSerializer(serializers.ModelSerializer):
         tour.save()
         return total_cost
 
-    def to_representation(self, instance):
-        represent = super().to_representation(instance)
+    def reaction_split(self, represent, instance):
+        """
+        Split the 'reaction' field in the serialized representation and add separate counters for 'like' and 'dislike'.
+
+        This method takes the serialized representation of an instance and splits the 'reaction' field into separate
+        counters for 'like' and 'dislike'. The counters represent the number of 'like' and 'dislike' reactions associated
+        with the instance.
+
+        Args:
+            represent (dict): The serialized representation of the instance.
+            instance: The instance for which the representation is being generated.
+
+        Returns:
+            None
+        """
+        reaction = represent.pop('reaction')
+        like_counter = instance.reaction.filter(reaction=1).count()
+        dislike_counter = instance.reaction.filter(reaction=0).count()
+        reaction = {
+            "like_counter": like_counter,
+            "dislike_counter": dislike_counter
+        }
+        represent.update(reaction)
+
+    def seat_num_split(self, represent, instance):
+        """
+        Split the 'seat_num' field in the serialized representation into 'reversed_seats' and 'available_seats'.
+
+        This method takes the serialized representation of an instance and splits the 'seat_num' field into separate
+        fields: 'reversed_seats' and 'available_seats'. 'reversed_seats' represents the reversed seat numbers, and
+        'available_seats' represents the total available seats for the instance.
+
+        Args:
+            represent (dict): The serialized representation of the instance.
+            instance: The instance for which the representation is being generated.
+
+        Returns:
+            None
+        """
         seat_num = represent.pop('seat_num')
         seat_num = {
             'reversed_seats': self.get_seat_num(instance),
             'available_seats': instance.seat_num
         }
         represent.update(seat_num)
+
+    def to_representation(self, instance):
+        represent = super().to_representation(instance)
+
+        self.seat_num_split(represent, instance)
+
+        self.reaction_split(represent, instance)
+
         return represent
 
     def get_status(self, tour):
@@ -159,13 +205,21 @@ class TourSerializer(serializers.ModelSerializer):
         return serializer.data
 
     def get_comments_num(self, tour):
-        comments_num = len(tour.tour_comments.all())
+        comments_num = tour.tour_comments.count()
         return comments_num
 
     def create(self, validated_data):
+        tour_points_data = validated_data.pop('tour_points')
         tour_attachments_data = validated_data.pop('tour_attachments', [])
+        tour = self.create_tour(validated_data)
+        self.create_tour_attachments(tour_attachments_data, tour)
+        self.create_tour_points(tour_points_data, tour)
+        return tour
 
-        tour = Tour.objects.create(**validated_data)
+    def create_tour(self, validated_data):
+        return Tour.objects.create(**validated_data)
+
+    def create_tour_attachments(self, tour_attachments_data, tour):
 
         for attachment_data in tour_attachments_data:
             attachment_serializer = TourAttachmentSerializer(
@@ -173,7 +227,21 @@ class TourSerializer(serializers.ModelSerializer):
             attachment_serializer.is_valid(raise_exception=True)
             attachment_serializer.save(tour_object=tour)
 
-        return tour
+    def create_tour_points(self, tour_points_data, tour):
+
+        tour_points = []
+
+        for tour_point_data in tour_points_data:
+            offer_request_data = tour_point_data.pop('offer_request', {})
+            offer_request = OfferRequest.objects.create(**offer_request_data)
+            tour_point = TourPoint(
+                tour_object=tour,
+                offer_request=offer_request,
+                **tour_point_data
+            )
+            tour_points.append(tour_point)
+
+        tour.tour_points.bulk_create(tour_points)
 
     def update(self, instance, validated_data):
         tour_attachments_data = validated_data.pop('tour_attachments', [])

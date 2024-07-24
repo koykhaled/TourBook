@@ -3,6 +3,7 @@ from djoser.serializers import UserSerializer, UserCreateSerializer
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import make_password
+from Core.helpers.Base64FileHandler import Base64FileField
 User = get_user_model()
 
 
@@ -91,6 +92,7 @@ class UserRegisterSerializer(UserCreateSerializer):
 
 
 class UserSerializer(UserSerializer):
+    avatar = Base64FileField()
 
     class Meta(UserSerializer.Meta):
         model = User

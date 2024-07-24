@@ -1,84 +1,70 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.pagination import PageNumberPagination
+from drf_spectacular.utils import extend_schema_view, extend_schema
+
+from rest_framework.permissions import AllowAny
 
 
-from Core.permissions import IsOrganizer, IsOrganizerOwnerOrReadOnly
+from Core.permissions.OrganizerPermissions import IsTourOwnerOrReadOnly
 from ..serializers.TourSerializer import TourSerializer
 from Client.serializers.ClientRequestserializer import ClientRequestSerializer
-from Client.models.client_request import ClientRequest
 from Client.models.client_request import SituationChoices
 
-from ..signals.handle_tour_request import handel_tour_request
-from django.db.models.signals import pre_save
 
 from ..models.tour import Tour
+
 
 from django.core import exceptions
 from datetime import datetime
 
 
+@extend_schema_view(
+
+    list=extend_schema(summary="List all tours", tags=["Tour"]),
+    create=extend_schema(summary="Create a new tour", tags=["Tour"]),
+    retrieve=extend_schema(summary="Retrieve a tour", tags=["Tour"]),
+    update=extend_schema(summary="Update a tour", tags=["Tour"]),
+    destroy=extend_schema(summary="Delete a tour", tags=["Tour"]),
+)
 class TourView(viewsets.ModelViewSet):
+    pagination_class = PageNumberPagination
+    queryset = Tour.objects.all()
     serializer_class = TourSerializer
-    permission_classes = [IsOrganizer, IsOrganizerOwnerOrReadOnly]
+    permission_classes = [IsTourOwnerOrReadOnly]
 
-    def get_organizer_tours(self, request):
+    def list(self, request):
         try:
-            tour_organizer = request.user.organizer
-            tours = Tour.objects.filter(
-                tour_organizer=tour_organizer).prefetch_related('tour_organizer')
-            serializer = self.serializer_class(tours, many=True)
+            tours = Tour.objects.prefetch_related(
+                'tour_attachments', 'tour_organizer').all()
+            page = self.paginate_queryset(tours)
 
+            if page is not None:
+                serializer = self.serializer_class(page, many=True)
+                return self.get_paginated_response(serializer.data)
+            serializer = self.serializer_class(tours, many=True)
             return Response(
                 {
                     'data': serializer.data,
-                    'message': "retrive organizer tours done".title()
                 },
                 status=status.HTTP_200_OK
             )
 
         except (exceptions.ValidationError, TypeError) as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        except Exception as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-    def get_other_organizers_tours(self, request):
-        try:
-            tour_organizer = request.user.organizer
-            tours = Tour.objects.exclude(
-                tour_organizer=tour_organizer).prefetch_related('tour_organizer')
-            serializer = self.serializer_class(tours, many=True)
-            return Response(
-                {
-                    'data': serializer.data,
-                    'message': "retrive other organizers tours done".title()
-                },
-                status=status.HTTP_200_OK
-            )
-
-        except (exceptions.ValidationError, TypeError) as e:
-            return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        except Exception as e:
             return Response({
                 'errors': str(e)
             },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    def get_tour(self, request, tour_id):
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def retrieve(self, request, tour_id):
         try:
             tour = Tour.objects.filter(
                 pk=tour_id).prefetch_related('tour_organizer').get()
@@ -115,8 +101,10 @@ class TourView(viewsets.ModelViewSet):
         try:
             tour_organizer = request.user.organizer
             serializer = self.serializer_class(data=request.data)
-            serializer.is_valid(raise_exception=True)
+            if not serializer.is_valid():
+                raise exceptions.ValidationError(serializer.errors)
             serializer.save(tour_organizer=tour_organizer)
+
             return Response(
                 {
                     'data': serializer.data,
@@ -133,19 +121,19 @@ class TourView(viewsets.ModelViewSet):
 
         except (exceptions.ValidationError, TypeError) as e:
             return Response({
-                'errors': str(e)
-            },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-        except Exception:
-            return Response({
                 'errors': serializer.errors
             },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-    def update_tour(self, request, tour_id):
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def update(self, request, tour_id):
         try:
             tour = Tour.objects.get(pk=tour_id)
             serializer = self.serializer_class(
@@ -180,7 +168,7 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def delete(self, request, tour_id):
+    def destroy(self, request, tour_id):
         try:
             tour = Tour.objects.get(pk=tour_id)
             tour.delete()
@@ -209,36 +197,35 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def post_tour(self, request, tour_id):
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="get latest 2 tours for UnAutheticated Users", tags=["HomeTours"]),
+
+)
+class UnauthToursView(viewsets.ModelViewSet):
+    permission_classes = [AllowAny]
+    serializer_class = TourSerializer
+
+    def get(self, request):
         try:
-            tour = Tour.objects.get(pk=tour_id)
-
-            serializer = self.serializer_class(
-                tour, data={'posted': True, 'posted_at': datetime.now()}, partial=True)
-
-            if not serializer.is_valid():
-                raise exceptions.ValidationError(serializer.errors)
-            else:
-                serializer.save()
-
+            tours = Tour.objects.prefetch_related(
+                'tour_attachments', 'tour_organizer').order_by('posted_at').all()[:2]
+            serializer = self.serializer_class(tours, many=True)
             return Response(
                 {
-                    'message': "Tour Posted Successfully"
+                    'data': serializer.data,
                 },
                 status=status.HTTP_200_OK
             )
-        except exceptions.ObjectDoesNotExist:
+
+        except (exceptions.ValidationError, TypeError) as e:
             return Response({
-                'errors': "Tour does not exist!"
-            },
-                status=status.HTTP_404_NOT_FOUND
-            )
-        except exceptions.ValidationError as e:
-            return Response({
-                'errors': serializer.errors
+                'errors': str(e)
             },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
         except Exception as e:
             return Response({
                 'errors': str(e)
@@ -246,7 +233,89 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def get_tour_requests(self, request, tour_id):
+
+@extend_schema_view(
+
+    list=extend_schema(summary="List all Organizer tours",
+                       tags=["Organizer Tours"]),
+)
+class OrganizerTours(viewsets.ModelViewSet):
+    serializer_class = TourSerializer
+    permission_classes = [IsTourOwnerOrReadOnly]
+
+    def list(self, request):
+        try:
+            tour_organizer = request.user.organizer
+            tours = Tour.objects.filter(
+                tour_organizer=tour_organizer).prefetch_related('tour_organizer')
+            serializer = self.serializer_class(tours, many=True)
+
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': "retrive organizer tours done".title()
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except exceptions.ObjectDoesNotExist as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema_view(
+
+    list=extend_schema(summary="List of Others Organizers tours",
+                       tags=["Other Organizers Tours"]),
+)
+class OtherOrganizersTours(viewsets.ModelViewSet):
+    serializer_class = TourSerializer
+    permission_classes = [IsTourOwnerOrReadOnly]
+
+    def list(self, request):
+        try:
+            tour_organizer = request.user.organizer
+            tours = Tour.objects.exclude(
+                tour_organizer=tour_organizer).prefetch_related('tour_organizer')
+            serializer = self.serializer_class(tours, many=True)
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': "retrive other organizers tours done".title()
+                },
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+@extend_schema_view(
+
+    list=extend_schema(summary="List all tour requests",
+                       tags=["Tour Requests"]),
+    create=extend_schema(
+        summary="accept the request from the client or reject it", tags=["Tour Requests"]),
+
+)
+class TourRequests(viewsets.ModelViewSet):
+    permission_classes = [IsTourOwnerOrReadOnly]
+
+    def list(self, request, tour_id):
         try:
             tour = Tour.objects.prefetch_related(
                 'tour_requests').get(pk=tour_id)
@@ -278,7 +347,7 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def handel_request(self, request, tour_id):
+    def create(self, request, tour_id):
         try:
             tour = Tour.objects.prefetch_related(
                 'tour_requests').get(pk=tour_id)
@@ -309,6 +378,52 @@ class TourView(viewsets.ModelViewSet):
         except exceptions.ValidationError:
             return Response({
                 'errors': request_serializer.errors
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+
+@extend_schema_view(
+    create=extend_schema(
+        summary="post the tour", tags=["Post Tour"]),
+)
+class TourPosted(viewsets.ModelViewSet):
+    permission_classes = [IsTourOwnerOrReadOnly]
+    serializer_class = TourSerializer
+
+    def create(self, request, tour_id):
+        try:
+            tour = Tour.objects.get(pk=tour_id)
+
+            serializer = self.serializer_class(
+                tour, data={'posted': True, 'posted_at': datetime.now()}, partial=True)
+
+            if not serializer.is_valid():
+                raise exceptions.ValidationError(serializer.errors)
+            else:
+                serializer.save()
+
+            return Response(
+                {
+                    'message': "Tour Posted Successfully"
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Tour does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError as e:
+            return Response({
+                'errors': serializer.errors
             },
                 status=status.HTTP_400_BAD_REQUEST
             )

@@ -2,57 +2,29 @@ from rest_framework import permissions
 from django.contrib.auth import get_user_model
 from .models.user import Role
 from Tour_Organizer.models.tour import Tour
+from Tour_Organizer.models.tour_organizer import TourOrganizer
+from Client.models.client_request import ClientRequest
+
+
 from django.core.exceptions import ObjectDoesNotExist
 User = get_user_model()
+
+# =================== don't forget to break this file into file for each app [clientPermission => Client , OrganizerPermission => Organzier .....]
 
 
 class IsSuperAdmin(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        if request.method in ('GET', 'HEAD', 'OPTIONS'):
-            return True
         if request.auth:
+            if request.method in ('GET', 'HEAD', 'OPTIONS'):
+                return True
             return request.user.role == Role.SUPER_ADMIN
 
 
 class IsAdvertiser(permissions.BasePermission):
 
     def has_permission(self, request, view):
-        if request.method in ('GET', 'HEAD', 'OPTIONS'):
-            return True
         if request.auth:
-            return request.user.role == Role.ADVERTISER
-
-
-class IsOrganizer(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.method in ('GET', 'HEAD', 'OPTIONS'):
-            return True
-        if request.auth:
-            return request.user.role == Role.ORGANIZER
-
-
-class IsClient(permissions.BasePermission):
-
-    def has_permission(self, request, view):
-        if request.method in ('GET', 'HEAD', 'OPTIONS'):
-            return True
-        if request.auth:
-            return request.user.role == Role.CLIENT
-
-
-class IsOrganizerOwnerOrReadOnly(permissions.BasePermission):
-    """
-    this permission class used to allow only for the owner to performe update or delete in thire objects
-    """
-
-    def has_permission(self, request, view):
-        if request.method in ('GET', 'HEAD', 'OPTIONS', 'POST'):
-            return True
-        else:
-            try:
-                tour = Tour.objects.get(pk=view.kwargs['tour_id'])
-                return tour.tour_organizer == request.user.organizer
-            except ObjectDoesNotExist:
+            if request.method in ('GET', 'HEAD', 'OPTIONS'):
                 return True
+            return request.user.role == Role.ADVERTISER

@@ -1,16 +1,16 @@
 from rest_framework.response import Response
 from rest_framework import status
 from django.core.exceptions import ValidationError
-from django.db.models.functions import ExtractMonth
-from django.db.models import Count
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+from rest_framework.viewsets import ModelViewSet
 
+from Advertiser.models.offers import OfferRequest
 from ..serializers.TourOrganizerSerializer import TourOrganizerSerializer
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
 
-from Core.permissions import IsOrganizer
+from Core.permissions.OrganizerPermissions import IsOrganizerOwnerProfile
 
 from ..models.tour_organizer import TourOrganizer
 
@@ -18,15 +18,64 @@ from django.core import exceptions
 
 from collections import defaultdict
 
+from drf_spectacular.utils import extend_schema_view, extend_schema
 
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List of All Organizers who participate in Advertiser Offers", tags=["Organizer Data"]),
+    retrieve=extend_schema(
+        summary="Retrieve Organizer Profile", tags=["Organizer Data"]),
+    update=extend_schema(summary="Update Organizer Data",
+                         tags=["Organizer Data"]),
+)
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer
     organizer_serializer_class = TourOrganizerSerializer
-    permission_classes = [IsOrganizer]
+    permission_classes = [IsOrganizerOwnerProfile]
 
-    def get_organizer(self, request):
+    def list(self, request):
+        # get organziers who subscripe in advertisers offers
+        try:
+            advertiser = request.user.advertiser
+            offers = advertiser.offers.all()
+            offer_requests = OfferRequest.objects.filter(
+                offer_object__in=offers, status='A'
+            ).select_related('offer_point', 'offer_point__tour_object', 'offer_point__tour_object__tour_organizer')
+
+            organizers = set()
+            for offer_request in offer_requests:
+                organizers.add(
+                    offer_request.offer_point.tour_object.tour_organizer)
+
+            serializer = self.organizer_serializer_class(
+                list(organizers), many=True)
+            return Response(
+                {'data': serializer.data},
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except exceptions.ValidationError as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def retrieve(self, request, id):
         """
-        Retrieve the organizer data for the authenticated user.
+        Retrieve the organizer data by id.
 
         This method returns the serialized data of the TourOrganizer instance associated with the authenticated user.
         It checks if all fields in the serialized data have a value (not None) and sets the data_status accordingly.
@@ -34,26 +83,37 @@ class TourOrganizerView(UserViewSet):
         Returns:
             Response: Serialized data of the organizer and status indicating the data_status.
         """
-        user = request.user
-        data_status = 0
-        organizer = TourOrganizer.objects.get(user=user)
-        serializer = self.organizer_serializer_class(organizer)
-        if all(value is not None for value in serializer.data.values()):
-            data_status = 1
+        try:
+            organizer = TourOrganizer.objects.get(pk=id)
+            serializer = self.organizer_serializer_class(organizer)
 
-        return Response({
-            "data": serializer.data,
-            "status": data_status
-        }, status=status.HTTP_200_OK)
+            return Response({
+                "data": serializer.data
+            }, status=status.HTTP_200_OK)
 
-    def update_organizer(self, request):
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Orgnaizer does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {
+                    "error": str(e)
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def update(self, request, id):
         """
-        Update the organizer data for the authenticated user.
+        Update the organizer data by id.
 
         This method allows updating the user and organizer data associated with the authenticated user.
         It performs partial updates on the user and organizer instances based on the provided request data.
 
         Args:
+            id (int) : id of the organizer
             request (Request): The HTTP request containing the updated user and organizer data.
             request contain to dictionaries :
                 user => contain user data [phone , email , username] for updating and send email when user change his email
@@ -64,11 +124,12 @@ class TourOrganizerView(UserViewSet):
         """
         try:
             user = request.user
-            organizer = TourOrganizer.objects.get(user=user)
+            organizer = TourOrganizer.objects.get(pk=id)
             user_serializer = self.serializer_class(user)
             organizer_serializer = self.organizer_serializer_class(organizer)
             errors = []
 
+            # don't forget to apply SRP
             if 'user' in request.data and request.data['user']:
                 user_serializer = self.serializer_class(
                     user, data=request.data['user'], partial=True)
@@ -108,6 +169,12 @@ class TourOrganizerView(UserViewSet):
                 {'errors': errors},
                 status=status.HTTP_400_BAD_REQUEST
             )
+        except exceptions.ObjectDoesNotExist:
+            return Response({
+                'errors': "Orgnaizer does not exist!"
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
         except Exception as e:
             return Response(
                 {
@@ -116,32 +183,55 @@ class TourOrganizerView(UserViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def get_organizer_statistics(self, request):
+
+@extend_schema_view(
+
+    list=extend_schema(summary="Get All Organizer Statstics",
+                       tags=["Organizer Statistics"]),
+
+)
+class OrganizerStatistics(ModelViewSet):
+    def list(self, request):
+        # don't forget to apply SRP
         try:
+
             organizer = request.user.organizer
+            tours = organizer.organizer_tours.filter(posted=1).all()
 
-            tours_per_month = organizer.organizer_tours.annotate(
-                month=ExtractMonth('created_at')).values('month').annotate(count=Count('id'))
+            months = ["January", "February", "March", "April", "May", "June",
+                      "July", "August", "September", "October", "November", "December"]
+            tours_per_month = {
+                month: 0 for month in months
+            }
+            profits_per_month = {
+                month: 0 for month in months
+            }
 
-            profits_per_month = self.get_organizer_tour_profits_per_month(
-                organizer)
+            result = []
+            total_profit = sum(tour.seat_num*tour.seat_cost for tour in tours)
+            for tour in tours:
+                tours_per_month[tour.start_date.strftime("%B")] += 1
+                profits_per_month[tour.start_date.strftime(
+                    "%B")] += tour.seat_num * tour.seat_cost
 
-            organizer_tour = organizer.organizer_tours.filter(
-                posted=1, pk=request.data['tour_id']).get()
+            for month, count in tours_per_month.items():
+                profits_per_month[month] = round(profits_per_month[month] /
+                                                 total_profit * 100, 2)
+                data = {"month": month, "count": count,
+                        "profits_per_month": f"{profits_per_month[month]}%"}
+                result.append(data)
 
-            comments = organizer_tour.tour_comments.all()
+            comments = []
 
-            if len(comments) > 0:
-                sentiment_scores = get_sentiment_scores(comments)
-                organizer_tour_rating = convert_to_percentage_value(
-                    sentiment_scores)
-            else:
-                organizer_tour_rating = 0
+            for tour in tours:
+                for comment in tour.tour_comments.all():
+                    comments.append(comment)
+
+            organizer_tours_rating = get_sentiment_scores(comments)
 
             data = {
-                'tours_per_month': tours_per_month,
-                "organizer_tour_rating": organizer_tour_rating,
-                'profits_per_month': profits_per_month
+                "tour_per_months": result,
+                "organizer_tours_rating": organizer_tours_rating
             }
 
             return Response({"data": data}, status=status.HTTP_200_OK)
@@ -180,8 +270,10 @@ class TourOrganizerView(UserViewSet):
         tour_profits = 0
 
         for tour in tours:
-            month_name = tour.start_date.strftime('%B')
-            tour_profits = tour.seat_num * tour.seat_cost
+            month_name = tour.start_date.strftime('%d')
+
+            tour_profit += tour.seat_num * tour.seat_cost
+
             profits_per_month[month_name] += tour_profits
 
         return profits_per_month
@@ -199,11 +291,17 @@ def get_sentiment_scores(comments):
     """
     analyzer = SentimentIntensityAnalyzer()
     scores = []
-    for comment in comments:
-        sentiment_scores = analyzer.polarity_scores(comment.comment)
-        compound_score = sentiment_scores['compound']
-        scores.append(compound_score)
-    return scores
+    result = 0
+    if len(comments) > 0:
+        for comment in comments:
+            sentiment_scores = analyzer.polarity_scores(comment.comment)
+            compound_score = sentiment_scores['compound']
+            scores.append(compound_score)
+        result = convert_to_percentage_value(scores)
+    else:
+        result = 0
+
+    return f"{round(result, 2)}%"
 
 
 def convert_to_percentage_value(values):

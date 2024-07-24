@@ -1,6 +1,7 @@
 from django.urls import path, include
-from .views.OrganizerView import TourOrganizerView
-from .views.TourView import TourView
+from .views.OrganizerView import TourOrganizerView, OrganizerStatistics
+from .views.TourView import TourView, UnauthToursView, OrganizerTours, OtherOrganizersTours, TourRequests, TourPosted
+
 from .views.TourPointView import TourPointView
 
 
@@ -8,63 +9,75 @@ app_name = 'tour_organizer'
 
 organizer_patterns = [
     path(
-        '', TourOrganizerView.as_view(
+        '<int:id>', TourOrganizerView.as_view(
             {
-                'get': 'get_organizer',
-                'post': 'update_organizer',
+                'get': 'retrieve',
+                'patch': 'update',
             }
         ),
         name='organizers'
     ),
     path(
-        'statistics', TourOrganizerView.as_view(
+        'statistics', OrganizerStatistics.as_view(
             {
-                'get': 'get_organizer_statistics',
+                'get': 'list',
             }
         ),
         name='organizers-statistics'
-    )
+    ),
+    path('get-organizers', TourOrganizerView.as_view(
+        {
+            'get': 'list'
+        }
+    ))
 ]
 
 tour_points_pattern = [
     path('', TourPointView.as_view(
         {
-            'get': 'get_tour_points',
+            'get': 'list',
 
         }
     )),
     path('<int:tour_point_id>', TourPointView.as_view(
         {
-            # 'get': 'get_tour_point',
             'patch': 'update',
-            'delete': 'delete',
+            'delete': 'destroy',
 
         }
     ))
 ]
 
 tour_requests_pattern = [
-    path('', TourView.as_view(
+    path('', TourRequests.as_view(
         {
-            'get': 'get_tour_requests',
-            'post': 'handel_request'
+            'get': 'list',
+            'post': 'create'
         }
     )),
 ]
 
 tour_patterns = [
     path('', TourView.as_view({
-        'get': 'get_organizer_tours',
+        'get': 'list',
         'post': 'create',
     })),
-    path('<int:tour_id>/', TourView.as_view({
-        'get': 'get_tour',
-        'post': 'post_tour',
-        'patch': 'update_tour',
-        'delete': 'delete',
+    path('unauth-tours', UnauthToursView.as_view({
+        'get': 'get',
     })),
-    path('other-organizers-tours/', TourView.as_view({
-        'get': 'get_other_organizers_tours'
+    path('organizer-tours', OrganizerTours.as_view({
+        'get': 'list'
+    })),
+    path('<int:tour_id>/', TourView.as_view({
+        'get': 'retrieve',
+        'patch': 'update',
+        'delete': 'destroy',
+    })),
+    path('<int:tour_id>/post', TourPosted.as_view({
+        'post': 'create',
+    })),
+    path('other-organizers-tours/', OtherOrganizersTours.as_view({
+        'get': 'list'
     })),
     path('<int:tour_id>/tour-points/', include(tour_points_pattern)),
     path('<int:tour_id>/tour-requests/', include(tour_requests_pattern)),
