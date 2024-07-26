@@ -20,22 +20,22 @@
 # # Start the application
 # echo "Starting the application..."
 # gunicorn TourBook.asgi:application --workers=4 --worker-class=uvicorn.workers.UvicornWorker --bind=0.0.0.0:$PORT
-#!/usr/bin/env bash
-# exit on error
-set -o errexit
+#!/bin/bash
 
-poetry install
+# Set the necessary environment variables
+export DATABASE_URL="postgresql://tourbook_ffi9_user:FEidGVybo60YCqDHN66K3pPqrU2Taxja@dpg-cqfutdpu0jms7388ker0-a/tourbook_ffi9"
+export SECRET_KEY="c5e43a2e1387d147594940c43e39d7a9"
+export DEBUG="False"
 
-/opt/render/project/src/.venv/bin/python -m pip install --upgrade pip
-/opt/render/project/src/.venv/bin/python -m pip install -r requirements.txt
-/opt/render/project/src/.venv/bin/python manage.py collectstatic --no-input
-/opt/render/project/src/.venv/bin/python manage.py migrate
+# Install dependencies
+pip install -r requirements.txt
 
-#!/usr/bin/env bash
-# exit on error
-set -o errexit
-
-poetry install
-
-python manage.py collectstatic --no-input
+# Apply database migrations
+python manage.py makemigrations
 python manage.py migrate
+
+# Collect static files
+python manage.py collectstatic --no-input
+
+# Start the Django application
+gunicorn TourBook.wsgi --log-file -
