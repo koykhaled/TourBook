@@ -9,4 +9,14 @@ pip install -r requirements.txt
 python manage.py collectstatic --no-input
 
 # Apply any outstanding database migrations
+# python manage.py migrate
+#!/bin/bash
+
+# Apply database migrations
+echo "Applying database migrations..."
+python manage.py makemigrations
 python manage.py migrate
+
+# Start the application
+echo "Starting the application..."
+gunicorn TourBook.asgi:application --workers=4 --worker-class=uvicorn.workers.UvicornWorker --bind=0.0.0.0:$PORT
