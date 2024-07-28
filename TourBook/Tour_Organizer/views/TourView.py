@@ -1,6 +1,7 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema_view, extend_schema
 
 from rest_framework.permissions import AllowAny
@@ -24,7 +25,7 @@ from datetime import datetime
     list=extend_schema(summary="List all tours", tags=["Tour"]),
     create=extend_schema(summary="Create a new tour", tags=["Tour"]),
     retrieve=extend_schema(summary="Retrieve a tour", tags=["Tour"]),
-    update=extend_schema(summary="Update a tour", tags=["Tour"]),
+    update_tour=extend_schema(summary="Update a tour", tags=["Tour"]),
     destroy=extend_schema(summary="Delete a tour", tags=["Tour"]),
 )
 class TourView(viewsets.ModelViewSet):
@@ -133,7 +134,8 @@ class TourView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def update(self, request, tour_id):
+    @action(detail=False)
+    def update_tour(self, request, tour_id):
         try:
             tour = Tour.objects.get(pk=tour_id)
             serializer = self.serializer_class(

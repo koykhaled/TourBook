@@ -1,4 +1,5 @@
 from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from Core.permissions.OrganizerPermissions import IsTourOwnerOrReadOnly
 from ..serializers.TourPointSerializer import TourPointSerializer
@@ -10,7 +11,8 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 @extend_schema_view(
 
     list=extend_schema(summary="List all tour points", tags=["Tour Points"]),
-    update=extend_schema(summary="Update a tour point", tags=["Tour Points"]),
+    update_tour_point=extend_schema(
+        summary="Update a tour point", tags=["Tour Points"]),
     destroy=extend_schema(summary="Delete a tour point", tags=["Tour Points"]),
 )
 class TourPointView(viewsets.ModelViewSet):
@@ -47,7 +49,8 @@ class TourPointView(viewsets.ModelViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def update(self, request, tour_id, tour_point_id):
+    @action(detail=False)
+    def update_tour_point(self, request, tour_id, tour_point_id):
         try:
             tour = Tour.objects.prefetch_related('tour_points').get(pk=tour_id)
             tour_point = tour.tour_points.get(pk=tour_point_id)
