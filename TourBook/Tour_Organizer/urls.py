@@ -12,7 +12,7 @@ organizer_patterns = [
         '<int:id>', TourOrganizerView.as_view(
             {
                 'get': 'retrieve',
-                'patch': 'update',
+                'patch': 'update_organizer',
             }
         ),
         name='organizers'
@@ -41,7 +41,7 @@ tour_points_pattern = [
     )),
     path('<int:tour_point_id>', TourPointView.as_view(
         {
-            'patch': 'update',
+            'patch': 'update_tour_point',
             'delete': 'destroy',
 
         }
@@ -70,7 +70,7 @@ tour_patterns = [
     })),
     path('<int:tour_id>/', TourView.as_view({
         'get': 'retrieve',
-        'patch': 'update',
+        'patch': 'update_tour',
         'delete': 'destroy',
     })),
     path('<int:tour_id>/post', TourPosted.as_view({

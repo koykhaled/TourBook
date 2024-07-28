@@ -3,6 +3,8 @@ from rest_framework import status
 from django.core.exceptions import ValidationError
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
+from rest_framework.decorators import action
+
 from rest_framework.viewsets import ModelViewSet
 
 from Advertiser.models.offers import OfferRequest
@@ -23,11 +25,11 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 
 @extend_schema_view(
     list=extend_schema(
-        summary="List of All Organizers who participate in Advertiser Offers", tags=["Organizer Data"]),
+        summary="List of All Organizers who participate in Advertiser Offers", tags=["Organizers"]),
     retrieve=extend_schema(
-        summary="Retrieve Organizer Profile", tags=["Organizer Data"]),
-    update=extend_schema(summary="Update Organizer Data",
-                         tags=["Organizer Data"]),
+        summary="Retrieve Organizer Profile", tags=["Organizer Profile"]),
+    update_organizer=extend_schema(summary="Update Organizer Data",
+                                   tags=["Organizer Profile"]),
 )
 class TourOrganizerView(UserViewSet):
     serializer_class = UserSerializer
@@ -105,7 +107,8 @@ class TourOrganizerView(UserViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def update(self, request, id):
+    @action(detail=False)
+    def update_organizer(self, request, id):
         """
         Update the organizer data by id.
 
