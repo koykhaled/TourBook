@@ -260,6 +260,8 @@ if not DEBUG:
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:5173',  # Replace with your frontend host
-]
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:5173',  # Replace with your frontend host
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
