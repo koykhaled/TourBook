@@ -28,9 +28,7 @@ SECRET_KEY = 'django-insecure-d4v#k_pwdnqp3-0wu-3cfbaz+a$k$98-x0@wmn4p8ukw_ybj@0
 
 
 DEBUG = True
-if DEBUG:
 
-DEBUG = True
 if DEBUG:
 
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
