@@ -30,9 +30,12 @@ SECRET_KEY = 'django-insecure-d4v#k_pwdnqp3-0wu-3cfbaz+a$k$98-x0@wmn4p8ukw_ybj@0
 DEBUG = True
 if DEBUG:
 
+DEBUG = True
+if DEBUG:
+
     STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = []
 
 
 # Application definition
@@ -57,6 +60,7 @@ INSTALLED_APPS = [
     'django_cleanup.apps.CleanupConfig',
     'cloudinary_storage',
     'cloudinary',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -65,6 +69,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -243,13 +248,12 @@ AUTH_USER_MODEL = 'Core.UserAccount'
 SPECTACULAR_SETTINGS = {
     'TITLE': "TourBook API's",
 }
-      
 
-          
-CLOUDINARY_STORAGE = { 
-  'CLOUD_NAME' : "dntpfwkri", 
-  'API_KEY' : "345918894245781", 
-  'API_SECRET': "DO-7twxcq8ncg1FLMwxVlHpO9E4" 
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': "dntpfwkri",
+    'API_KEY': "345918894245781",
+    'API_SECRET': "DO-7twxcq8ncg1FLMwxVlHpO9E4"
 }
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
@@ -262,3 +266,10 @@ if not DEBUG:
     # Enable the WhiteNoise storage backend, which compresses static files to reduce disk use
     # and renames the files with unique names for each version to support long-term caching
     STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+
+# CORS_ORIGIN_WHITELIST = [
+#     'http://localhost:5173',  # Replace with your frontend host
+# ]
+
+CORS_ALLOW_ALL_ORIGINS = True
