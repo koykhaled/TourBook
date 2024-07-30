@@ -15,5 +15,5 @@ class Notification (BaseModel):
     is_read = models.BooleanField(default=False)
     user = models.ForeignKey(
         UserAccount,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE, related_name="notifications"
     )

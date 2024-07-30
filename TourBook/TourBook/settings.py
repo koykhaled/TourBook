@@ -151,7 +151,8 @@ EMAIL_HOST_USER = "koykhaled@gmail.com"
 EMAIL_HOST_PASSWORD = "oepx iomz rzzu ehym"
 EMAIL_USE_TLS = True
 
-
+DOMAIN = ('localhost:5137')
+SITE_NAME = ('TourBook')
 DJOSER = {
     # login should be with email field
     'LOGIN_FIELD': 'username',

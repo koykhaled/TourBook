@@ -26,8 +26,8 @@ class Advertiser(BaseModel):
     - place_capacity (IntegerField) :  The capacity of the advertiser's place.
     - place_name (CharField) :  The name of the advertiser's place.
     - link (URLField) : The URL link associated with the advertiser's site or account on social media.
-    - axis_x (FloatField) :     The x-coordinate of the advertiser's location on the map.
-    - axis_y (FloatField) :     The y-coordinate of the advertiser's location on the map.
+    - axis_x (FloatField) : The x-coordinate of the advertiser's location on the map.
+    - axis_y (FloatField) : The y-coordinate of the advertiser's location on the map.
 
     """
 
@@ -41,7 +41,7 @@ class Advertiser(BaseModel):
     service = models.ManyToManyField(Service)
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE)
+        on_delete=models.CASCADE, related_name='advertiser')
 
     def clean(self):
         """
@@ -74,7 +74,7 @@ class AdvertiserAttachments(BaseModel):
     """
     advertiser_object = models.ForeignKey(
         Advertiser,
-        on_delete=models.CASCADE ,related_name='advertiser_attachments')
+        on_delete=models.CASCADE, related_name='advertiser_attachments')
     attachment_object = models.ForeignKey(
         Attachment,
         on_delete=models.CASCADE)
