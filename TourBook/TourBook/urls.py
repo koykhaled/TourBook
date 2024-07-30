@@ -9,6 +9,7 @@ api_patterns = [
     path('tours/', include('Tour_Organizer.urls', namespace='tour_organizer')),
     path('tours/', include('Advertiser.urls', namespace='advertiser')),
     path('tours/', include('Client.urls', namespace='client')),
+    path('', include('Core.urls'), name='core'),
 ]
 urlpatterns = [
     path('admin/', admin.site.urls),

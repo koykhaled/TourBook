@@ -212,7 +212,7 @@ class UnauthToursView(viewsets.ModelViewSet):
     def get(self, request):
         try:
             tours = Tour.objects.prefetch_related(
-                'tour_attachments', 'tour_organizer').order_by('posted_at').all()[:2]
+                'tour_attachments', 'tour_organizer').order_by('-posted_at').all()[:2]
             serializer = self.serializer_class(tours, many=True)
             return Response(
                 {

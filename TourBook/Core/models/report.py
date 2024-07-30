@@ -1,13 +1,12 @@
 from django.db import models
-from .user import UserAccount
 from .base import BaseModel
+from django.contrib.auth import get_user_model
+User = get_user_model()
 
 
-class ReportTypes (BaseModel):
-    """
-    Model representing the types of reports.
-    """
-    type = models.CharField(max_length=150)
+class ReportType(models.TextChoices):
+    CLIENT_REPORT = "CR", "Client Report"
+    ADVERTISER_REPORT = "AR", "Advertiser Report"
 
 
 class Report (BaseModel):
@@ -24,17 +23,15 @@ class Report (BaseModel):
         max_length=150,
         null=True
     )
-    type = models.ForeignKey(
-        ReportTypes,
-        on_delete=models.CASCADE
-    )
+    report_type = models.CharField(max_length=20, choices=ReportType.choices)
+
     respondent = models.ForeignKey(
-        UserAccount,
+        User,
         on_delete=models.CASCADE,
         related_name="respondent"
     )
     complainant = models.ForeignKey(
-        UserAccount,
+        User,
         on_delete=models.CASCADE,
         related_name="complainant"
     )
