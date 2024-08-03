@@ -1,26 +1,20 @@
 import re
 from rest_framework import serializers
-from Advertiser.models.advertiser import Advertiser, Situation 
+from Advertiser.models.advertiser import Advertiser, Situation
 from Core.models.attachment import Attachment
 from accounts.serializers import UserSerializer
 from rest_framework import serializers
 from Advertiser.models.offers import Offer, Offer_Attachments, OfferRequest
 from django.db.models import Sum
 from Advertiser.models.advertiser import AdvertiserAttachments
-from Advertiser.models.service import Service
+from .ServiceSerializer import ServiceSerializer
 
-class ServiceSerializer(serializers.ModelSerializer):
-    """
-    Serializer for the Service model.
-    """
-    class Meta:
-        model = Service
-        fields = ['id','service_field']
 
 class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
         fields = '__all__'
+
 
 class OfferAttachmentsSerializer(serializers.ModelSerializer):
     attachment_object = AttachmentSerializer()
@@ -29,43 +23,56 @@ class OfferAttachmentsSerializer(serializers.ModelSerializer):
         model = Offer_Attachments
         fields = ['attachment_object']
 
+
 class AdvertiserAttachmentsSerializers(serializers.ModelSerializer):
     attachment_object = AttachmentSerializer()
 
     class Meta:
         model = AdvertiserAttachments
         fields = ['attachment_object']
+
+
 class OfferRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OfferRequest
         fields = ['id', 'num_of_seat', 'description']
+
+
 class OfferSerializer(serializers.ModelSerializer):
-    offer_attachments = OfferAttachmentsSerializer(many=True, source='offer_attachments.all')
+    offer_attachments = OfferAttachmentsSerializer(
+        many=True, source='offer_attachments.all')
     offer_requests = OfferRequestSerializer(many=True, read_only=True)
     start_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
     end_date = serializers.DateTimeField(format='%Y-%m-%d %H:%M')
 
     class Meta:
         model = Offer
-        fields = ['id','num_of_seat','offer_requests','start_date', 'end_date', 'description', 'price_for_one', 'title', 'service', 'offer_attachments', 'advertiser_object']
+        fields = ['id', 'num_of_seat', 'offer_requests', 'start_date', 'end_date', 'description',
+                  'price_for_one', 'title', 'service', 'offer_attachments', 'advertiser_object']
+
+
 class AdvertiserSerializers(serializers.ModelSerializer):
     """
     Serializer for the Advertiser model.
     """
-    user =UserSerializer()
+    user = UserSerializer()
     service = ServiceSerializer(many=True)
     offers = OfferSerializer(many=True, read_only=True)
     available_seats = serializers.SerializerMethodField()
-    advertiser_attachments = AdvertiserAttachmentsSerializers(many=True, read_only=True)
+    advertiser_attachments = AdvertiserAttachmentsSerializers(
+        many=True, read_only=True)
 
-    class Meta :
+    class Meta:
         model = Advertiser
-        fields = ['situation','user','place_capacity','place_name','link','axis_x','axis_y','service','offers','available_seats','advertiser_attachments']
+        fields = ['situation', 'user', 'place_capacity', 'place_name', 'link', 'axis_x',
+                  'axis_y', 'service', 'offers', 'available_seats', 'advertiser_attachments']
         read_only_fields = ('user', 'available_seats')
 
     def get_available_seats(self, obj):
-        total_quantity = sum(obj_offer.num_of_seat for obj_offer in obj.offers.all())
-        offer_requests_quantity = sum(obj_request.num_of_seat for obj_offer in obj.offers.all() for obj_request in obj_offer.offer_requests.all())
+        total_quantity = sum(
+            obj_offer.num_of_seat for obj_offer in obj.offers.all())
+        offer_requests_quantity = sum(obj_request.num_of_seat for obj_offer in obj.offers.all(
+        ) for obj_request in obj_offer.offer_requests.all())
         return total_quantity - offer_requests_quantity
 
     def validate(self, attrs):
@@ -88,7 +95,7 @@ class AdvertiserSerializers(serializers.ModelSerializer):
 
         if 'place_capacity' in attrs and attrs['place_capacity'] <= 0:
             errors['place_capacity'] = " place capacity must be greater than zero."
-            
+
         if 'avatar' in attrs:
             allowed_types = ["image/jpeg", "image/png"]
             avatar_errors = {}
@@ -104,7 +111,7 @@ class AdvertiserSerializers(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
 
         return attrs
-  
+
     def get_user(self, obj):
         user = obj.user
         user_serializer = UserSerializer(user)
@@ -122,4 +129,3 @@ class AdvertiserSerializers(serializers.ModelSerializer):
         }
         representation.update(user_data)
         return representation
-    
