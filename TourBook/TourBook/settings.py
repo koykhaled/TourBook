@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'cloudinary',
     'corsheaders',
+    'django_filters',
 ]
 
 MIDDLEWARE = [

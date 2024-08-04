@@ -6,6 +6,7 @@ from Advertiser.models.offers import Offer
 from Advertiser.serializers.OfferRequestSerializer import OfferRequestSerializer
 import re
 from Core.helpers.helpers import is_within
+from django.core import exceptions
 
 
 class TourPointSerializer(serializers.ModelSerializer):
@@ -99,10 +100,10 @@ class TourPointSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         offer_request_data = validated_data.pop('offer_request')
         offer = Offer.objects.get(pk=offer_request_data['offer_object'])
-        offer_request_data['offer_object'] = offer
         offer_request_serializer = OfferRequestSerializer(
             data=offer_request_data)
-        offer_request_serializer.is_valid(raise_exception=True)
+        if not offer_request_serializer.is_valid():
+            raise exceptions.ValidationError(offer_request_serializer.errors)
         offer_request = offer_request_serializer.save(offer_object=offer)
 
         tour_point = TourPoint.objects.create(
