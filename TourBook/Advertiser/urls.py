@@ -2,6 +2,7 @@ from django.urls import path, include
 # from .views import AdvertisersView, OfferListAPIView, ActiveOffersAPIView
 from .views.AdvertiserView import AdvertiserView
 from .views.OfferView import OfferView
+from .views.OfferRequestView import OfferRequestView
 
 
 app_name = 'advertisers'
@@ -13,6 +14,14 @@ advertiser_patterns = [
     }))
 ]
 
+offer_request_patterns = [
+    path('', OfferRequestView.as_view({
+        'get': 'get_offer_requests'
+    })),
+    path('<int:offer_request_id>/', OfferRequestView.as_view({
+        'patch': 'handel_offer_requests'
+    })),
+]
 offer_patterns = [
     path('advertiser-offers', OfferView.as_view(
         {
@@ -30,8 +39,10 @@ offer_patterns = [
             'get': "get_offer",
             'patch': "update_offer",
         }
-    ))
+    )),
+    path('<int:offer_id>/offer-requests/', include(offer_request_patterns))
 ]
+
 
 urlpatterns = [
     path('advertisers/', include(advertiser_patterns), name='advertiser'),

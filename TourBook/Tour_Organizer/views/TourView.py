@@ -102,7 +102,7 @@ class TourView(viewsets.ModelViewSet):
         try:
             tour_organizer = request.user.organizer
             serializer = self.serializer_class(data=request.data)
-            if not serializer.is_valid():
+            if not serializer.is_valid(raise_exception=True):
                 raise exceptions.ValidationError(serializer.errors)
             serializer.save(tour_organizer=tour_organizer)
 
@@ -122,7 +122,7 @@ class TourView(viewsets.ModelViewSet):
 
         except (exceptions.ValidationError, TypeError) as e:
             return Response({
-                'errors': serializer.errors
+                'errors': serializer.errors or e
             },
                 status=status.HTTP_400_BAD_REQUEST
             )

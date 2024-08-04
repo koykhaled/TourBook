@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 # Create your models here.
 
@@ -32,6 +33,13 @@ class BaseModel(models.Model):
 
     def is_within(self, min_value, max_value, value):
         return min_value <= value <= max_value
+
+    def save(self, *args, **kwargs):
+        created_at = datetime.now().replace(microsecond=0)
+        self.created_at = datetime.strptime(
+            str(created_at), "%Y-%m-%d %H:%M:%S")
+
+        super().save(*args, **kwargs)
 
     class Meta:
         abstract = True

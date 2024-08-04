@@ -5,7 +5,7 @@ from .TourPointSerializer import TourPointSerializer
 from ..models.tour import Tour
 from ..models.tour_point import TourPoint
 
-from Advertiser.models.offers import OfferRequest, Offer
+from Advertiser.models.offers import OfferRequest
 
 from decimal import Decimal
 

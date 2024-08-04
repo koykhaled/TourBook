@@ -22,6 +22,13 @@ class OfferSerializer(serializers.ModelSerializer):
         serializer = AdvertiserSerializers(advertiser)
         return serializer.data
 
+    def get_seat_num(self, offer):
+        offer_requests = offer.offer_requests.filter(status="A")
+        reserverd_seats = 0
+        for offer_request in offer_requests:
+            reserverd_seats += offer_request.num_of_seat
+        return reserverd_seats
+
     def validate(self, attrs):
         attrs = super().validate(attrs)
         errors = {}
@@ -60,9 +67,32 @@ class OfferSerializer(serializers.ModelSerializer):
         }
         represent.update(service_data)
 
+    def seat_num_split(self, represent, instance):
+        """
+        Split the 'seat_num' field in the serialized representation into 'reversed_seats' and 'available_seats'.
+
+        This method takes the serialized representation of an instance and splits the 'seat_num' field into separate
+        fields: 'reversed_seats' and 'available_seats'. 'reversed_seats' represents the reversed seat numbers, and
+        'available_seats' represents the total available seats for the instance.
+
+        Args:
+            represent (dict): The serialized representation of the instance.
+            instance: The instance for which the representation is being generated.
+
+        Returns:
+            None
+        """
+        seat_num = represent.pop('num_of_seat')
+        seat_num = {
+            'reversed_seats': self.get_seat_num(instance),
+            'available_seats': instance.num_of_seat
+        }
+        represent.update(seat_num)
+
     def to_representation(self, instance):
         represent = super().to_representation(instance)
         self.split_advertiser(represent)
+        self.seat_num_split(represent, instance)
         self.split_service(represent)
         return represent
 
