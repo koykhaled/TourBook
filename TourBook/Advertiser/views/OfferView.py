@@ -1,11 +1,25 @@
-from rest_framework import status, viewsets
-from ..serializers.NewOfferSerializer import OfferSerializer
+from rest_framework import status, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.decorators import action
+
+from ..serializers.OfferSerializer import ActiveOffersSerializer
+
+from ..serializers.NewOfferSerializer import OfferSerializer
+
+from ..serializers.AdvertiserSerializers import OfferSerializer as OfferListSerializer
+
+from ..serializers.OfferSerializer import ActiveOffersSerializer
+
+from Core.permissions.AdvertiserPermissions import IsOfferOwnerOrReadOnly
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from django.core import exceptions
+from datetime import datetime
+from django.db.models import Q
+
+from rest_framework.views import APIView
+
 
 from ..models.offers import Offer, Service
 
@@ -21,6 +35,7 @@ from ..models.offers import Offer, Service
 )
 class OfferView(viewsets.ModelViewSet):
     serializer_class = OfferSerializer
+    permission_classes = [IsOfferOwnerOrReadOnly]
 
     @action(detail=False)
     def get_advertiser_offers(self, request):
@@ -164,3 +179,42 @@ class OfferView(viewsets.ModelViewSet):
             },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+@extend_schema(
+    summary="Offers for Organizers",
+    tags=['Offers'],
+)
+class OfferListAPIView(generics.ListAPIView):
+    queryset = Offer.objects.all()
+    serializer_class = OfferSerializer
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get Active Offers and filter theme by day , service and title", tags=['Offers']),
+)
+class ActiveOffersAPIView(APIView):
+    @action(detail=False)
+    def get(self, request):
+        current_date = datetime.now()
+        query = Q(end_date__gt=current_date)
+
+        day = request.GET.get('day')
+        if day:
+            # Filter by day (end_date__date > given day)
+            query &= Q(end_date__date__gt=day)
+
+        service = request.GET.get('service')
+        if service:
+            # Filter by service
+            query &= Q(service__service_field=service)
+
+        title = request.GET.get('title')
+        if title:
+            # Filter by title
+            query &= Q(title__icontains=title)
+
+        active_offers = Offer.objects.filter(query)
+        serializer = ActiveOffersSerializer(active_offers, many=True)
+        return Response(serializer.data)

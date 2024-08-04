@@ -1,7 +1,6 @@
 from django.urls import path, include
-# from .views import AdvertisersView, OfferListAPIView, ActiveOffersAPIView
-from .views.AdvertiserView import AdvertiserView
-from .views.OfferView import OfferView
+from .views.AdvertiserView import AdvertiserView, AdvertisersView
+from .views.OfferView import OfferView, OfferListAPIView, ActiveOffersAPIView
 from .views.OfferRequestView import OfferRequestView
 
 
@@ -11,7 +10,8 @@ advertiser_patterns = [
     path('<int:advertiser_id>/', AdvertiserView.as_view({
         'get': 'retrieve',
         'patch': 'update_advertiser'
-    }))
+    })),
+    path('', AdvertisersView.as_view(), name='advertisers')
 ]
 
 offer_request_patterns = [
@@ -23,6 +23,8 @@ offer_request_patterns = [
     })),
 ]
 offer_patterns = [
+    path('', OfferListAPIView.as_view(), name='offers'),
+    path('active-offers/', ActiveOffersAPIView.as_view(), name='offers'),
     path('advertiser-offers', OfferView.as_view(
         {
             "get": "get_advertiser_offers",
@@ -47,8 +49,4 @@ offer_patterns = [
 urlpatterns = [
     path('advertisers/', include(advertiser_patterns), name='advertiser'),
     path('offers/', include(offer_patterns), name='offers')
-    # path('offers/', OfferListAPIView.as_view(), name='offers'),
-    # path('active_offers/', ActiveOffersAPIView.as_view(), name='offers'),
-    # path('advertisers/<int:user>/',
-    #      AdvertiserView.as_view(), name='advertiser-detail'),
 ]
