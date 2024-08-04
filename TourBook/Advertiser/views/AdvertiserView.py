@@ -1,6 +1,8 @@
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from ..serializers.AdvertiserSerializers import AdvertiserSerializers
 from accounts.serializers import UserSerializer
 from djoser.views import UserViewSet
@@ -15,7 +17,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 
 @extend_schema_view(
     retrieve=extend_schema(
-        summary="Retrieve Organizer Profile", tags=["Advertiser Profile"]),
+        summary="Retrieve Advertiser Profile", tags=["Advertiser Profile"]),
     update_advertiser=extend_schema(summary="Update Advertiser Profile",
                                     tags=["Advertiser Profile"]),
 )
@@ -127,3 +129,21 @@ class AdvertiserView(UserViewSet):
                 },
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get Advertisers List", tags=["Advertisers"]),
+)
+class AdvertisersView(APIView):
+    serializer_class = AdvertiserSerializers
+
+    @action(detail=False)
+    def get(self, request):
+        try:
+            advertisers = Advertiser.objects.all()
+            serializer = self.serializer_class(advertisers, many=True)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except Advertiser.DoesNotExist:
+            return Response({"detail": "Advertiser not found."}, status=status.HTTP_404_NOT_FOUND)

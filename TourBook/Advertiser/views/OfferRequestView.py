@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 
 from ..serializers.OfferRequestSerializer import OfferRequestSerializer
 from ..models.offers import Offer
+from Core.permissions.AdvertiserPermissions import IsOfferOwnerOrReadOnly
 
 from django.core import exceptions
 
@@ -24,6 +25,7 @@ from ..services.FilterServices import OfferRequestFilterService
 )
 class OfferRequestView(viewsets.ModelViewSet):
     serializer_class = OfferRequestSerializer
+    permission_classes = [IsOfferOwnerOrReadOnly]
     filter_backends = [DjangoFilterBackend]
     filterset_class = OfferRequestFilterService
 
