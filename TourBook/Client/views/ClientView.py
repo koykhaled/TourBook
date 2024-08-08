@@ -39,7 +39,8 @@ class ClientView(UserViewSet):
 
         try:
             client = request.user.client
-            client_requests = client.client_requests.filter(situation='A')
+            client_requests = client.client_requests.filter(
+                situation='A').select_related('tour_object')
             tours = [
                 client_request.tour_object
                 for client_request in client_requests
@@ -60,7 +61,7 @@ class ClientView(UserViewSet):
                 'errors': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    def retrieve(self, request, client_id):
+    def retrieve(self, request):
         """
         Retrieve the client data for the authenticated user.
 
@@ -71,7 +72,7 @@ class ClientView(UserViewSet):
             Response: Serialized data of the client and status indicating the data_status.
         """
         try:
-            client = Client.objects.get(pk=client_id)
+            client = request.user.client
             serializer = self.client_serializer_class(client)
 
             return Response({
@@ -92,7 +93,7 @@ class ClientView(UserViewSet):
             )
 
     @action(detail=False)
-    def update_client(self, request, client_id):
+    def update_client(self, request):
         """
         Update the client data .
 
@@ -110,8 +111,8 @@ class ClientView(UserViewSet):
         """
         try:
 
-            client = Client.objects.prefetch_related('user').get(pk=client_id)
-            user = client.user
+            user = request.user
+            client = user.client
             user_serializer = self.serializer_class(user)
             client_serializer = self.client_serializer_class(client)
             errors = []
@@ -119,7 +120,7 @@ class ClientView(UserViewSet):
             if 'user' in request.data and request.data['user']:
                 user_serializer = self.serializer_class(
                     user, data=request.data['user'], partial=True)
-                if not user_serializer.is_valid(raise_exception=False):
+                if not user_serializer.is_valid():
                     errors.append(user_serializer.errors)
                 else:
                     self.perform_update(user_serializer)
@@ -127,7 +128,7 @@ class ClientView(UserViewSet):
             if 'client' in request.data:
                 client_serializer = self.client_serializer_class(
                     client, data=request.data['client'], partial=True)
-                if not client_serializer.is_valid(raise_exception=False):
+                if not client_serializer.is_valid():
                     errors.append(client_serializer.errors)
                 else:
                     client_serializer.save()

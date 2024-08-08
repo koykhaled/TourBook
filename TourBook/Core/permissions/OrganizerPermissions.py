@@ -12,21 +12,13 @@ User = get_user_model()
 class IsOrganizerOwnerProfile(permissions.BasePermission):
 
     def has_permission(self, request, view):
-
         if request.auth:
             if request.method in ('GET', 'HEAD', 'OPTIONS'):
                 return True
             else:
                 if request.user.role == Role.ORGANIZER:
-                    if request.method == "POST":
-                        return True
-                    try:
-                        organizer = TourOrganizer.objects.get(
-                            pk=view.kwargs['id'])
-                        print(organizer == request.user.organizer)
-                        return organizer == request.user.organizer
-                    except ObjectDoesNotExist:
-                        return True
+                    return True
+        return False
 
 
 class IsTourOwnerOrReadOnly(permissions.BasePermission):

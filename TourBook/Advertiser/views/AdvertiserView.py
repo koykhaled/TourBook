@@ -26,7 +26,7 @@ class AdvertiserView(UserViewSet):
     advertiser_serializer_class = AdvertiserSerializers
     permission_classes = [IsAdvertiserOwnerProfile]
 
-    def retrieve(self, request, advertiser_id):
+    def retrieve(self, request):
         """
         Retrieve the advertiser data by id.
 
@@ -37,7 +37,7 @@ class AdvertiserView(UserViewSet):
             Response: Serialized data of the advertiser and status indicating the data_status.
         """
         try:
-            advertiser = Advertiser.objects.get(pk=advertiser_id)
+            advertiser = request.user.advertiser
             serializer = self.advertiser_serializer_class(advertiser)
 
             return Response({
@@ -59,7 +59,7 @@ class AdvertiserView(UserViewSet):
             )
 
     @action(detail=False)
-    def update_advertiser(self, request, advertiser_id):
+    def update_advertiser(self, request):
         """
         Update the advertiser data by id.
 
@@ -78,7 +78,7 @@ class AdvertiserView(UserViewSet):
         """
         try:
             user = request.user
-            advertiser = Advertiser.objects.get(pk=advertiser_id)
+            advertiser = user.advertiser
             user_serializer = self.serializer_class(user)
             advertiser_serializer = self.advertiser_serializer_class(
                 advertiser)

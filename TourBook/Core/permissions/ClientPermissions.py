@@ -12,20 +12,13 @@ User = get_user_model()
 class IsClientOwnerProfile(permissions.BasePermission):
 
     def has_permission(self, request, view):
-
         if request.auth:
             if request.method in ('GET', 'HEAD', 'OPTIONS'):
                 return True
             else:
                 if request.user.role == Role.CLIENT:
-                    if request.method == "POST":
-                        return True
-                    try:
-                        client = Client.objects.get(
-                            pk=view.kwargs['client_id'])
-                        return client == request.user.client
-                    except ObjectDoesNotExist:
-                        return True
+                    return True
+        return False
 
 
 class IsRequestOwnerOrReadOnly(permissions.BasePermission):

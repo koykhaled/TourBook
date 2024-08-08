@@ -69,3 +69,7 @@ class ClientSerializer(serializers.ModelSerializer):
         if 'gender' in attrs:
             if attrs['gender'] not in GenderChoices.get_values():
                 errors['gender'] = f"gender is not in {GenderChoices.get_values()}"
+
+        if errors:
+            raise serializers.ValidationError(errors)
+        return attrs

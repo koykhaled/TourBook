@@ -12,20 +12,13 @@ User = get_user_model()
 class IsAdvertiserOwnerProfile(permissions.BasePermission):
 
     def has_permission(self, request, view):
-
         if request.auth:
             if request.method in ('GET', 'HEAD', 'OPTIONS'):
                 return True
             else:
                 if request.user.role == Role.ADVERTISER:
-                    if request.method == "POST":
-                        return True
-                    try:
-                        advertiser = Advertiser.objects.get(
-                            pk=view.kwargs['advertiser_id'])
-                        return advertiser == request.user.advertiser
-                    except ObjectDoesNotExist:
-                        return True
+                    return True
+        return False
 
 
 class IsOfferOwnerOrReadOnly(permissions.BasePermission):
