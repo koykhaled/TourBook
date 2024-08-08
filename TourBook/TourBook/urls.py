@@ -7,8 +7,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 api_patterns = [
     path('tours/', include('Tour_Organizer.urls', namespace='tour_organizer')),
-    path('tours/', include('Advertiser.urls', namespace='advertiser')),
-    path('tours/', include('Client.urls', namespace='client')),
+    path('advertisers/', include('Advertiser.urls', namespace='advertiser')),
+    path('clients/', include('Client.urls', namespace='client')),
     path('', include('Core.urls'), name='core'),
 ]
 urlpatterns = [

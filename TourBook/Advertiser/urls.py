@@ -7,10 +7,10 @@ from .views.OfferRequestView import OfferRequestView
 app_name = 'advertisers'
 
 advertiser_patterns = [
-    path('<int:advertiser_id>/', AdvertiserView.as_view({
+    path('advertiser-detail/', AdvertiserView.as_view({
         'get': 'retrieve',
         'patch': 'update_advertiser'
-    })),
+    }), name="advertiser-detail"),
     path('', AdvertisersView.as_view(), name='advertisers')
 ]
 
@@ -47,6 +47,6 @@ offer_patterns = [
 
 
 urlpatterns = [
-    path('advertisers/', include(advertiser_patterns), name='advertiser'),
+    path('', include(advertiser_patterns), name='advertiser'),
     path('offers/', include(offer_patterns), name='offers')
 ]

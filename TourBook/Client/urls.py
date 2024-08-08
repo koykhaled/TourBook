@@ -8,13 +8,13 @@ app_name = "client"
 
 
 client_patterns = [
-    path('<int:client_id>/', ClientView.as_view(
+    path('', ClientView.as_view(
         {
             'get': 'retrieve',
             'patch': 'update_client',
         }
     )),
-    path('', ClientView.as_view({
+    path('client-tours/', ClientView.as_view({
         'get': 'get_client_tours'
     }))
 ]
@@ -73,7 +73,7 @@ invetation_pattern = [
 
 
 urlpatterns = [
-    path('clients/', include(client_patterns)),
+    path('', include(client_patterns)),
     path('<int:tour_id>/comments/', include(comments_pattern)),
     path('<int:tour_id>/requests/', include(requests_pattern)),
     path('client-requests/', include(client_requests_pattern)),
