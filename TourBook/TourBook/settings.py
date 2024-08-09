@@ -173,7 +173,7 @@ DJOSER = {
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
 
     # route to send email message when user need to change his password
-    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/?uid={uid}&token={token}',
 
     # to send email confirmation for users when he want to change his email
     'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
@@ -182,10 +182,10 @@ DJOSER = {
     'SEND_CONFIRMATION_EMAIL': True,
 
     # route to change username
-    'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
+    'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/?uid={uid}&token={token}',
 
     # to activate user after registeration
-    'ACTIVATION_URL': 'activate/{uid}/{token}',
+    'ACTIVATION_URL': 'activate/?uid={uid}&token={token}',
 
     # to recive activation email
     'SEND_ACTIVATION_EMAIL': True,
