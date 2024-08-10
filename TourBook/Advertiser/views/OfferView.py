@@ -223,7 +223,7 @@ class ActiveOffersAPIView(APIView):
 
 
 @extend_schema_view(
-    get=extend_schema(
+    get_advertiser_offers=extend_schema(
         summary="Get Advertiser Offers ", tags=['Offers']),
 )
 class AdvertiserOffers(viewsets.ModelViewSet):
