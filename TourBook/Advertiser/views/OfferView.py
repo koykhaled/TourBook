@@ -14,6 +14,8 @@ from Core.permissions.AdvertiserPermissions import IsOfferOwnerOrReadOnly
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
+from ..models.advertiser import Advertiser
+
 from django.core import exceptions
 from datetime import datetime
 from django.db.models import Q
@@ -157,7 +159,7 @@ class OfferView(viewsets.ModelViewSet):
                     'data': serializer.data,
                     'message': "Offer Updated Successfully"
                 },
-                status=status.status.HTTP_200_OK
+                status=status.HTTP_200_OK
             )
         except exceptions.ObjectDoesNotExist as e:
             return Response({
@@ -218,3 +220,48 @@ class ActiveOffersAPIView(APIView):
         active_offers = Offer.objects.filter(query)
         serializer = ActiveOffersSerializer(active_offers, many=True)
         return Response(serializer.data)
+
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get Advertiser Offers ", tags=['Offers']),
+)
+class AdvertiserOffers(viewsets.ModelViewSet):
+    serializer_class = OfferSerializer
+
+    @action(detail=False)
+    def get_advertiser_offers(self, request, advertiser_id):
+        try:
+            advertiser = Advertiser.objects.prefetch_related(
+                'offers').get(pk=advertiser_id)
+            offers = advertiser.offers.all()
+            serializer = self.serializer_class(
+                offers, many=True)
+
+            return Response(
+                {
+                    'data': serializer.data,
+                    'message': "Offer Updated Successfully"
+                },
+                status=status.HTTP_200_OK
+            )
+        except exceptions.ObjectDoesNotExist as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        except (exceptions.ValidationError, TypeError) as e:
+            return Response({
+                'errors': serializer.errors or e
+            },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except Exception as e:
+            return Response({
+                'errors': str(e)
+            },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
