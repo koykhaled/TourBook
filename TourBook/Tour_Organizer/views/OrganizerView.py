@@ -75,7 +75,7 @@ class TourOrganizerView(UserViewSet):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def retrieve(self, request, id):
+    def retrieve(self, request):
         """
         Retrieve the organizer data by id.
 
@@ -86,7 +86,7 @@ class TourOrganizerView(UserViewSet):
             Response: Serialized data of the organizer and status indicating the data_status.
         """
         try:
-            organizer = TourOrganizer.objects.get(pk=id)
+            organizer = request.user.organizer
             serializer = self.organizer_serializer_class(organizer)
 
             return Response({
@@ -108,7 +108,7 @@ class TourOrganizerView(UserViewSet):
             )
 
     @action(detail=False)
-    def update_organizer(self, request, id):
+    def update_organizer(self, request):
         """
         Update the organizer data by id.
 
@@ -127,7 +127,7 @@ class TourOrganizerView(UserViewSet):
         """
         try:
             user = request.user
-            organizer = TourOrganizer.objects.get(pk=id)
+            organizer = user.organizer
             user_serializer = self.serializer_class(user)
             organizer_serializer = self.organizer_serializer_class(organizer)
             errors = []

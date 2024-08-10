@@ -9,7 +9,7 @@ app_name = 'tour_organizer'
 
 organizer_patterns = [
     path(
-        '<int:id>', TourOrganizerView.as_view(
+        '', TourOrganizerView.as_view(
             {
                 'get': 'retrieve',
                 'patch': 'update_organizer',

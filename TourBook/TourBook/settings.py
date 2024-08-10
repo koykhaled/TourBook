@@ -106,23 +106,23 @@ WSGI_APPLICATION = 'TourBook.wsgi.application'
 # }
 
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME': 'TourBook'.lower(),
-#         'USER': 'postgres',
-#         'PASSWORD': '1234',
-#         'HOST': 'localhost',
-#         'PORT': 5432,
-#     }
-# }
 DATABASES = {
-    'default': dj_database_url.config(
-        # Replace this value with your local database's connection string.
-        default='postgresql://tourbook_ffi9_user:FEidGVybo60YCqDHN66K3pPqrU2Taxja@dpg-cqfutdpu0jms7388ker0-a/tourbook_ffi9',
-        conn_max_age=600
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'TourBook'.lower(),
+        'USER': 'postgres',
+        'PASSWORD': '1234',
+        'HOST': 'localhost',
+        'PORT': 5432,
+    }
 }
+# DATABASES = {
+#     'default': dj_database_url.config(
+#         # Replace this value with your local database's connection string.
+#         default='postgresql://tourbook_ffi9_user:FEidGVybo60YCqDHN66K3pPqrU2Taxja@dpg-cqfutdpu0jms7388ker0-a/tourbook_ffi9',
+#         conn_max_age=600
+#     )
+# }
 # DATABASES = {
 #     "default": dj_database_url.parse(os.environ.get("DATABASE_URL"))
 # }

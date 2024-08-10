@@ -64,7 +64,7 @@ class AdvertiserSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = Advertiser
-        fields = ['situation', 'user', 'place_capacity', 'place_name', 'link', 'axis_x',
+        fields = ['id', 'situation', 'user', 'place_capacity', 'place_name', 'link', 'axis_x',
                   'axis_y', 'service', 'offers', 'available_seats', 'advertiser_attachments']
         read_only_fields = ('user', 'available_seats')
 
@@ -122,7 +122,7 @@ class AdvertiserSerializers(serializers.ModelSerializer):
 
         user_data = representation.pop('user')
         user_data = {
-            'id': user_data['id'],
+            'user_id': user_data['id'],
             'username': user_data['username'],
             'phone': user_data['phone'],
             'email': user_data['email']
