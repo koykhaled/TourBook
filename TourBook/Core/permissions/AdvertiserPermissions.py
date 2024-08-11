@@ -31,7 +31,7 @@ class IsOfferOwnerOrReadOnly(permissions.BasePermission):
             if request.method in ('GET', 'HEAD', 'OPTIONS'):
                 return True
             else:
-                if request.user.role == Role.CLIENT:
+                if request.user.role == Role.ADVERTISER:
                     if request.method == "POST":
                         return True
                     try:
