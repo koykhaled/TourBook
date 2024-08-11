@@ -8,6 +8,7 @@ from Advertiser.models.offers import Offer, Offer_Attachments, OfferRequest
 from django.db.models import Sum
 from Advertiser.models.advertiser import AdvertiserAttachments
 from .ServiceSerializer import ServiceSerializer
+from ..models.service import Service
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -129,3 +130,18 @@ class AdvertiserSerializers(serializers.ModelSerializer):
         }
         representation.update(user_data)
         return representation
+
+    def update(self, instance, validated_data):
+        services_data = validated_data.pop('service')
+
+        for service_data in services_data:
+            service_id = service_data.get('service_field')
+            if service_id:
+                try:
+                    service_instance = Service.objects.get(id=service_id)
+                    instance.service.add(service_instance)
+                except Service.DoesNotExist:
+                    raise serializers.ValidationError(
+                        f"Service with id {service_id} does not exist.")
+        advertiser = super().update(instance, validated_data)
+        return advertiser
