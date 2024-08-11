@@ -119,7 +119,7 @@ WSGI_APPLICATION = 'TourBook.wsgi.application'
 DATABASES = {
     'default': dj_database_url.config(
         # Replace this value with your local database's connection string.
-        default='postgresql://tourbook_049m_user:Vl6kFHz4rHNxfcMJ5ZkW7Th018HLuHKV@dpg-cqh9om1u0jms7393cueg-a.oregon-postgres.render.com/tourbook_049m',
+        default='postgresql://postgres:sQCStxiMpMNsEXHpHQhMSQYUMXRCkhLp@postgres.railway.internal:5432/railway',
         conn_max_age=600
     )
 }
